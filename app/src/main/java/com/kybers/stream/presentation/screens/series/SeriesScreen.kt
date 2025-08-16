@@ -82,7 +82,7 @@ fun SeriesScreen(
             }
             uiState.error != null -> {
                 ErrorMessage(
-                    error = uiState.error,
+                    error = uiState.error!!,
                     onRetry = { viewModel.loadSeries() },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -174,9 +174,9 @@ fun SearchAndFilterSection(
                 )
                 categories.forEach { category ->
                     DropdownMenuItem(
-                        text = { Text(category.name) },
+                        text = { Text(category.categoryName) },
                         onClick = {
-                            onCategorySelected(category.name)
+                            onCategorySelected(category.categoryName)
                         }
                     )
                 }
@@ -203,7 +203,7 @@ fun SeriesList(
             ) {
                 items(
                     items = series,
-                    key = { it.id }
+                    key = { it.seriesId }
                 ) { seriesItem ->
                     SeriesGridItem(
                         series = seriesItem,
@@ -220,7 +220,7 @@ fun SeriesList(
             ) {
                 items(
                     items = series,
-                    key = { it.id }
+                    key = { it.seriesId }
                 ) { seriesItem ->
                     SeriesListItem(
                         series = seriesItem,
