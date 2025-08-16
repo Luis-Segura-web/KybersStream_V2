@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kybers.stream.presentation.screens.settings.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,7 +24,9 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val preferences by viewModel.userPreferences.collectAsStateWithLifecycle()
+    val preferences by viewModel.userPreferences.collectAsStateWithLifecycle(
+        initialValue = com.kybers.stream.domain.model.UserPreferences()
+    )
 
     Column(
         modifier = Modifier

@@ -97,7 +97,7 @@ fun TvScreen(
             }
             uiState.error != null -> {
                 ErrorMessage(
-                    error = uiState.error,
+                    error = uiState.error!!,
                     onRetry = { viewModel.loadChannels() },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -228,9 +228,9 @@ fun SearchAndFilterSection(
                 )
                 categories.forEach { category ->
                     DropdownMenuItem(
-                        text = { Text(category.name) },
+                        text = { Text(category.categoryName) },
                         onClick = {
-                            onCategorySelected(category.name)
+                            onCategorySelected(category.categoryName)
                         }
                     )
                 }
