@@ -19,23 +19,6 @@ data class Series(
     val tmdbId: String? = null
 )
 
-data class SeriesDetail(
-    val seasons: List<Season>,
-    val info: SeriesInfo,
-    val episodes: Map<String, List<Episode>>
-)
-
-data class Season(
-    val airDate: String?,
-    val episodeCount: Int,
-    val id: String,
-    val name: String,
-    val seasonNumber: String,
-    val overview: String?,
-    val cover: String?,
-    val coverBig: String?
-)
-
 data class SeriesInfo(
     val name: String,
     val cover: String?,
@@ -51,18 +34,6 @@ data class SeriesInfo(
     val lastModified: Long = 0L,
     val episodeRunTime: String?,
     val categoryId: String
-)
-
-data class Episode(
-    val id: String,
-    val episodeNum: Int,
-    val title: String,
-    val containerExtension: String?,
-    val addedTimestamp: Long,
-    val info: EpisodeInfo,
-    val season: Int,
-    val customSid: String?,
-    val directSource: String?
 )
 
 data class EpisodeInfo(

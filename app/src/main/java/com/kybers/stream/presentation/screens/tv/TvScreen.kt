@@ -35,6 +35,9 @@ import com.kybers.stream.domain.model.Channel
 import com.kybers.stream.presentation.components.SearchBar
 import com.kybers.stream.presentation.components.ViewMode
 import com.kybers.stream.presentation.components.ViewModeToggle
+import com.kybers.stream.presentation.components.epg.EpgNowNextDisplay
+import com.kybers.stream.presentation.components.epg.EpgLoadingPlaceholder
+import com.kybers.stream.presentation.components.epg.EpgErrorDisplay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,13 +108,16 @@ fun TvScreen(
             else -> {
                 ChannelsList(
                     channels = uiState.filteredChannels,
+                    channelsEpg = uiState.channelsEpg,
                     viewMode = uiState.viewMode,
+                    isLoadingEpg = uiState.isLoadingEpg,
                     onChannelClick = { channel ->
                         viewModel.playChannel(channel)
                     },
                     onFavoriteClick = { channel ->
                         viewModel.toggleFavorite(channel)
                     },
+                    onRefreshEpg = { viewModel.refreshEpg() },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -242,9 +248,12 @@ fun SearchAndFilterSection(
 @Composable
 fun ChannelsList(
     channels: List<Channel>,
+    channelsEpg: Map<String, com.kybers.stream.domain.model.ChannelEpg>,
     viewMode: ViewMode,
+    isLoadingEpg: Boolean,
     onChannelClick: (Channel) -> Unit,
     onFavoriteClick: (Channel) -> Unit,
+    onRefreshEpg: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (viewMode) {
@@ -260,8 +269,11 @@ fun ChannelsList(
                 ) { channel ->
                     ChannelItem(
                         channel = channel,
+                        channelEpg = channelsEpg[channel.streamId],
+                        isLoadingEpg = isLoadingEpg,
                         onClick = { onChannelClick(channel) },
-                        onFavoriteClick = { onFavoriteClick(channel) }
+                        onFavoriteClick = { onFavoriteClick(channel) },
+                        onRefreshEpg = onRefreshEpg
                     )
                 }
             }
@@ -281,6 +293,8 @@ fun ChannelsList(
                 ) { channel ->
                     ChannelGridItem(
                         channel = channel,
+                        channelEpg = channelsEpg[channel.streamId],
+                        isLoadingEpg = isLoadingEpg,
                         onClick = { onChannelClick(channel) },
                         onFavoriteClick = { onFavoriteClick(channel) }
                     )
@@ -293,8 +307,11 @@ fun ChannelsList(
 @Composable
 fun ChannelItem(
     channel: Channel,
+    channelEpg: com.kybers.stream.domain.model.ChannelEpg?,
+    isLoadingEpg: Boolean,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit,
+    onRefreshEpg: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -335,23 +352,23 @@ fun ChannelItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 
-                // EPG actual (simulado)
-                Text(
-                    text = "20:00 - Programa Actual",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                
-                // EPG siguiente (simulado)
-                Text(
-                    text = "21:00 - Siguiente Programa",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                // EPG real o placeholder
+                when {
+                    isLoadingEpg -> {
+                        EpgLoadingPlaceholder()
+                    }
+                    channelEpg != null -> {
+                        EpgNowNextDisplay(
+                            channelEpg = channelEpg,
+                            use24HourFormat = true // TODO: Get from preferences
+                        )
+                    }
+                    else -> {
+                        EpgErrorDisplay(
+                            onRetry = onRefreshEpg
+                        )
+                    }
+                }
             }
             
             // Botón de favorito
@@ -371,6 +388,8 @@ fun ChannelItem(
 @Composable
 fun ChannelGridItem(
     channel: Channel,
+    channelEpg: com.kybers.stream.domain.model.ChannelEpg?,
+    isLoadingEpg: Boolean,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -413,14 +432,34 @@ fun ChannelGridItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 
-                // EPG actual (simulado)
-                Text(
-                    text = "20:00 - Programa",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                // EPG actual
+                channelEpg?.currentProgram?.let { currentProgram ->
+                    Text(
+                        text = "${currentProgram.getFormattedTime().split(" - ")[0]} - ${currentProgram.title}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                } ?: if (isLoadingEpg) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(12.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(6.dp)
+                            )
+                    )
+                } else {
+                    Text(
+                        text = "Sin información",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
                 
                 // Botón de favorito en la esquina
                 Box(

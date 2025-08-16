@@ -13,11 +13,6 @@ data class Movie(
     val tmdbId: String? = null
 )
 
-data class MovieDetail(
-    val info: MovieInfo,
-    val movieData: MovieData
-)
-
 data class MovieInfo(
     val movieImage: String?,
     val name: String,

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.kybers.stream.domain.model.*
 import com.kybers.stream.domain.usecase.favorites.GetFavoritesUseCase
 import com.kybers.stream.domain.usecase.playback.GetContinueWatchingUseCase
+import com.kybers.stream.domain.repository.DiscoveryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -21,14 +22,23 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getFavoritesUseCase: GetFavoritesUseCase,
-    private val getContinueWatchingUseCase: GetContinueWatchingUseCase
+    private val getContinueWatchingUseCase: GetContinueWatchingUseCase,
+    private val discoveryRepository: DiscoveryRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    val discoveryData: StateFlow<DiscoveryData> = discoveryRepository.getDiscoveryDataFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = DiscoveryData(emptyList(), isLoading = true)
+        )
+
     init {
         loadHomeData()
+        refreshDiscovery()
     }
 
     private fun loadHomeData() {
@@ -63,5 +73,57 @@ class HomeViewModel @Inject constructor(
 
     fun refresh() {
         loadHomeData()
+    }
+
+    fun refreshDiscovery() {
+        viewModelScope.launch {
+            try {
+                discoveryRepository.refreshDiscoveryData()
+            } catch (e: Exception) {
+                // Error handling - could emit to a shared error state if needed
+            }
+        }
+    }
+
+    fun onContentItemClick(item: ContentItem) {
+        when (item) {
+            is ContentItem.MovieItem -> {
+                // TODO: Navigate to movie detail screen
+                // navigationController.navigate("movie_detail/${item.id}")
+            }
+            is ContentItem.SeriesItem -> {
+                // TODO: Navigate to series detail screen
+                // navigationController.navigate("series_detail/${item.id}")
+            }
+            is ContentItem.EpisodeItem -> {
+                // TODO: Navigate to episode detail or start playback
+                // navigationController.navigate("episode_detail/${item.id}")
+            }
+            is ContentItem.ContinueWatchingItem -> {
+                // TODO: Resume playback from saved position
+                // playerManager.resumePlayback(item.id, item.progress.positionMs)
+            }
+        }
+    }
+
+    fun onContentPlayClick(item: ContentItem) {
+        when (item) {
+            is ContentItem.MovieItem -> {
+                // TODO: Start movie playback
+                // playerManager.playMovie(item.id)
+            }
+            is ContentItem.SeriesItem -> {
+                // TODO: Play first episode or last watched episode
+                // playerManager.playSeriesFromBeginning(item.id)
+            }
+            is ContentItem.EpisodeItem -> {
+                // TODO: Start episode playback
+                // playerManager.playEpisode(item.id)
+            }
+            is ContentItem.ContinueWatchingItem -> {
+                // Resume from current position
+                // playerManager.resumePlayback(item.id, item.progress.positionMs)
+            }
+        }
     }
 }

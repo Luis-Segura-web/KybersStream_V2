@@ -1,0 +1,209 @@
+package com.kybers.stream.presentation.screens.seriesdetail
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kybers.stream.domain.model.*
+import com.kybers.stream.domain.usecase.favorites.AddFavoriteUseCase
+import com.kybers.stream.domain.usecase.favorites.RemoveFavoriteUseCase
+import com.kybers.stream.domain.usecase.favorites.IsFavoriteUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class SeriesDetailUiState(
+    val isLoading: Boolean = false,
+    val seriesDetail: SeriesDetail? = null,
+    val error: String? = null
+)
+
+@HiltViewModel
+class SeriesDetailViewModel @Inject constructor(
+    private val addFavoriteUseCase: AddFavoriteUseCase,
+    private val removeFavoriteUseCase: RemoveFavoriteUseCase,
+    private val isFavoriteUseCase: IsFavoriteUseCase
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(SeriesDetailUiState())
+    val uiState: StateFlow<SeriesDetailUiState> = _uiState.asStateFlow()
+
+    private val _seriesId = MutableStateFlow("")
+    private val seriesId: StateFlow<String> = _seriesId.asStateFlow()
+
+    private val _selectedSeason = MutableStateFlow<Season?>(null)
+    val selectedSeason: StateFlow<Season?> = _selectedSeason.asStateFlow()
+
+    val isFavorite: StateFlow<Boolean> = seriesId
+        .filter { it.isNotEmpty() }
+        .flatMapLatest { id ->
+            isFavoriteUseCase(id, ContentType.SERIES)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    fun loadSeriesDetail(seriesId: String) {
+        _seriesId.value = seriesId
+        
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            
+            try {
+                // TODO: Implement actual API call to get series details
+                // For now, create a mock series detail
+                val mockSeries = createMockSeriesDetail(seriesId)
+                
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false,
+                        seriesDetail = mockSeries,
+                        error = null
+                    )
+                }
+                
+                // Set first season as selected by default
+                if (mockSeries.seasons.isNotEmpty()) {
+                    _selectedSeason.value = mockSeries.seasons.first()
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isLoading = false,
+                        error = "Error al cargar detalles: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    fun selectSeason(season: Season) {
+        _selectedSeason.value = season
+    }
+
+    fun toggleFavorite() {
+        viewModelScope.launch {
+            val series = _uiState.value.seriesDetail ?: return@launch
+            val currentlyFavorite = isFavorite.value
+            
+            try {
+                if (currentlyFavorite) {
+                    removeFavoriteUseCase(series.id, ContentType.SERIES)
+                } else {
+                    val favoriteItem = FavoriteItem(
+                        contentId = series.id,
+                        contentType = ContentType.SERIES,
+                        name = series.name,
+                        imageUrl = series.poster,
+                        categoryId = null,
+                        addedTimestamp = System.currentTimeMillis()
+                    )
+                    addFavoriteUseCase(favoriteItem)
+                }
+            } catch (e: Exception) {
+                // Handle error - could show a snackbar
+            }
+        }
+    }
+
+    private fun createMockSeriesDetail(seriesId: String): SeriesDetail {
+        // Mock data - in real implementation, this would come from API
+        val mockEpisodes1 = listOf(
+            Episode(
+                id = "${seriesId}_s1e1",
+                episodeNumber = 1,
+                seasonNumber = 1,
+                name = "Episodio Piloto",
+                overview = "El episodio que inicia toda la aventura. Los personajes principales se conocen y comienza su viaje épico.",
+                runtime = "45",
+                airDate = "2023-01-15",
+                still = "https://example.com/episode1.jpg"
+            ),
+            Episode(
+                id = "${seriesId}_s1e2",
+                episodeNumber = 2,
+                seasonNumber = 1,
+                name = "El Despertar",
+                overview = "Los protagonistas descubren sus verdaderos poderes mientras enfrentan su primera gran amenaza.",
+                runtime = "42",
+                airDate = "2023-01-22",
+                still = "https://example.com/episode2.jpg"
+            ),
+            Episode(
+                id = "${seriesId}_s1e3",
+                episodeNumber = 3,
+                seasonNumber = 1,
+                name = "Alianzas Inesperadas",
+                overview = "Enemigos se convierten en aliados cuando una amenaza mayor aparece en el horizonte.",
+                runtime = "48",
+                airDate = "2023-01-29",
+                still = "https://example.com/episode3.jpg"
+            )
+        )
+        
+        val mockEpisodes2 = listOf(
+            Episode(
+                id = "${seriesId}_s2e1",
+                episodeNumber = 1,
+                seasonNumber = 2,
+                name = "Nuevo Comienzo",
+                overview = "La segunda temporada comienza con nuestros héroes enfrentando las consecuencias de la temporada anterior.",
+                runtime = "50",
+                airDate = "2023-09-10",
+                still = "https://example.com/s2episode1.jpg"
+            ),
+            Episode(
+                id = "${seriesId}_s2e2",
+                episodeNumber = 2,
+                seasonNumber = 2,
+                name = "El Retorno",
+                overview = "Un personaje querido regresa de manera inesperada, cambiando toda la dinámica del grupo.",
+                runtime = "47",
+                airDate = "2023-09-17",
+                still = "https://example.com/s2episode2.jpg"
+            )
+        )
+        
+        val seasons = listOf(
+            Season(
+                seasonNumber = 1,
+                name = "Primera Temporada",
+                overview = "La temporada que inició todo. Los orígenes de nuestros héroes y su primer gran desafío.",
+                airDate = "2023-01-15",
+                episodes = mockEpisodes1,
+                episodeCount = mockEpisodes1.size
+            ),
+            Season(
+                seasonNumber = 2,
+                name = "Segunda Temporada",
+                overview = "La aventura continúa con nuevos desafíos y revelaciones impactantes.",
+                airDate = "2023-09-10",
+                episodes = mockEpisodes2,
+                episodeCount = mockEpisodes2.size
+            )
+        )
+        
+        return SeriesDetail(
+            id = seriesId,
+            name = "Serie Épica de Fantasía",
+            seriesId = seriesId,
+            year = "2023",
+            rating = "9.2",
+            genre = "Fantasía, Drama, Aventura",
+            plot = "Una serie épica que sigue las aventuras de un grupo de héroes en un mundo mágico lleno de peligros y maravillas. Con una narrativa compleja y personajes profundamente desarrollados, cada episodio revela nuevos misterios mientras los protagonistas enfrentan amenazas cada vez mayores.",
+            cast = "Protagonista Principal, Heroína Valiente, Mentor Sabio, Villano Complejo, Personaje Misterioso",
+            director = "Director Visionario",
+            poster = "https://example.com/series_poster.jpg",
+            backdrop = "https://example.com/series_backdrop.jpg",
+            imdbRating = "9.2",
+            language = "Español",
+            country = "España",
+            releaseDate = "2023-01-15",
+            seasons = seasons,
+            totalSeasons = seasons.size,
+            totalEpisodes = seasons.sumOf { it.episodeCount },
+            status = "Continuing"
+        )
+    }
+}

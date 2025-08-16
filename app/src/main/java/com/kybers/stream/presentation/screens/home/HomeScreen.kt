@@ -1,6 +1,7 @@
 package com.kybers.stream.presentation.screens.home
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +32,9 @@ import com.kybers.stream.domain.model.PlaybackProgress
 import com.kybers.stream.presentation.screens.movies.MoviesScreen
 import com.kybers.stream.presentation.screens.series.SeriesScreen
 import com.kybers.stream.presentation.screens.tv.TvScreen
+import com.kybers.stream.presentation.components.discovery.ContentCarouselSection
+import com.kybers.stream.presentation.components.discovery.LoadingCarousel
+import com.kybers.stream.presentation.components.discovery.ErrorCarousel
 
 enum class BottomNavItem(
     val title: String,
@@ -92,142 +96,122 @@ fun HomeTabContent(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    val discoveryData by viewModel.discoveryData.collectAsStateWithLifecycle()
+    
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        contentPadding = PaddingValues(bottom = 16.dp)
     ) {
-        // Botón de actualizar
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Inicio",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
+        item {
+            // Header con título y botón de actualizar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Inicio",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                IconButton(onClick = { viewModel.refreshDiscovery() }) {
+                    Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
+                }
+            }
+        }
+        
+        // Mostrar carruseles de descubrimiento
+        when {
+            discoveryData.isLoading -> {
+                items(3) { index ->
+                    LoadingCarousel(
+                        title = when (index) {
+                            0 -> "Continuar viendo"
+                            1 -> "Recomendado para ti"
+                            else -> "Recientes"
+                        }
+                    )
+                }
+            }
             
-            IconButton(onClick = { viewModel.refresh() }) {
-                Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
+            discoveryData.error != null -> {
+                item {
+                    ErrorCarousel(
+                        title = "Error al cargar contenido",
+                        error = discoveryData.error!!,
+                        onRetry = { viewModel.refreshDiscovery() }
+                    )
+                }
+            }
+            
+            discoveryData.hasContent -> {
+                discoveryData.sections.forEach { section ->
+                    section.carousels.forEach { carousel ->
+                        item(key = carousel.id) {
+                            ContentCarouselSection(
+                                carousel = carousel,
+                                onItemClick = { item ->
+                                    viewModel.onContentItemClick(item)
+                                },
+                                onPlayClick = { item ->
+                                    viewModel.onContentPlayClick(item)
+                                },
+                                onMoreClick = {
+                                    // TODO: Navigate to full category view
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+            
+            else -> {
+                item {
+                    // Estado vacío
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.VideoLibrary,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Text(
+                            text = "No hay contenido disponible",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(top = 16.dp)
+                        )
+                        
+                        Text(
+                            text = "Agrega contenido a favoritos o comienza a ver algo para ver recomendaciones",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
+                }
             }
         }
         
-        // Estado de carga
-        if (uiState.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(32.dp),
-                contentAlignment = Alignment.Center
+        // Botón de cerrar sesión al final
+        item {
+            Button(
+                onClick = onNavigateToLogin,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
-                CircularProgressIndicator()
+                Text("Cerrar Sesión")
             }
-        }
-        
-        // Mostrar error si existe
-        uiState.error?.let { error ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Text(
-                    text = "Error: $error",
-                    modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
-        }
-        
-        // Continuar viendo
-        if (uiState.continueWatching.isNotEmpty()) {
-            ContinueWatchingSection(
-                items = uiState.continueWatching,
-                onItemClick = { /* TODO: Navigate to content */ }
-            )
-        }
-        
-        // Favoritos
-        if (uiState.favorites.isNotEmpty()) {
-            FavoritesSection(
-                favorites = uiState.favorites,
-                onFavoriteClick = { /* TODO: Navigate to content */ }
-            )
-        }
-        // Banner/carrusel de recomendados (placeholder)
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                Text(
-                    text = "Banner de Recomendados",
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            }
-        }
-        
-        // Continuar viendo (placeholder)
-        Text(
-            text = "Continuar viendo",
-            style = MaterialTheme.typography.headlineSmall
-        )
-        
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                Text(
-                    text = "Lista horizontal de contenido en progreso",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
-        
-        // Recientes por categoría (placeholder)
-        Text(
-            text = "Recientes",
-            style = MaterialTheme.typography.headlineSmall
-        )
-        
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                Text(
-                    text = "Contenido reciente por categorías",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.weight(1f))
-        
-        // Botón de cerrar sesión
-        Button(
-            onClick = onNavigateToLogin,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Cerrar Sesión")
         }
     }
 }

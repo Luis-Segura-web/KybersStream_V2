@@ -10,6 +10,8 @@ import com.kybers.stream.domain.usecase.preferences.UpdateUserPreferencesUseCase
 import com.kybers.stream.domain.usecase.search.SearchContentUseCase
 import com.kybers.stream.domain.usecase.search.SearchScope
 import com.kybers.stream.domain.usecase.xtream.*
+import com.kybers.stream.domain.usecase.epg.GetChannelEpgUseCase
+import com.kybers.stream.domain.usecase.epg.RefreshEpgUseCase
 import com.kybers.stream.presentation.components.ViewMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -25,7 +27,10 @@ data class TvUiState(
     val searchQuery: String = "",
     val isSearching: Boolean = false,
     val viewMode: ViewMode = ViewMode.LIST,
-    val error: String? = null
+    val error: String? = null,
+    val channelsEpg: Map<String, ChannelEpg> = emptyMap(),
+    val isLoadingEpg: Boolean = false,
+    val epgError: String? = null
 )
 
 @HiltViewModel
@@ -35,7 +40,9 @@ class TvViewModel @Inject constructor(
     private val searchContentUseCase: SearchContentUseCase,
     private val getUserPreferencesUseCase: GetUserPreferencesUseCase,
     private val updateUserPreferencesUseCase: UpdateUserPreferencesUseCase,
-    private val playbackManager: PlaybackManager
+    private val playbackManager: PlaybackManager,
+    private val getChannelEpgUseCase: GetChannelEpgUseCase,
+    private val refreshEpgUseCase: RefreshEpgUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TvUiState())
@@ -50,6 +57,7 @@ class TvViewModel @Inject constructor(
         loadUserPreferences()
         loadCategories()
         loadChannels()
+        refreshEpg()
     }
     
     private fun loadUserPreferences() {
@@ -246,6 +254,52 @@ class TvViewModel @Inject constructor(
             }
             updateUserPreferencesUseCase.updateViewMode("tv", modeString)
         }
+    }
+    
+    // EPG Methods
+    fun refreshEpg() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingEpg = true, epgError = null) }
+            
+            refreshEpgUseCase().fold(
+                onSuccess = { epgData ->
+                    loadChannelsEpg()
+                    _uiState.update { it.copy(isLoadingEpg = false) }
+                },
+                onFailure = { error ->
+                    _uiState.update { 
+                        it.copy(
+                            isLoadingEpg = false, 
+                            epgError = "Error al cargar EPG: ${error.message}"
+                        )
+                    }
+                }
+            )
+        }
+    }
+    
+    private fun loadChannelsEpg() {
+        viewModelScope.launch {
+            val channelIds = _uiState.value.filteredChannels.map { it.streamId }
+            val epgMap = mutableMapOf<String, ChannelEpg>()
+            
+            channelIds.forEach { streamId ->
+                getChannelEpgUseCase(streamId).fold(
+                    onSuccess = { channelEpg ->
+                        epgMap[streamId] = channelEpg.copy(channelName = 
+                            _uiState.value.filteredChannels.find { it.streamId == streamId }?.name ?: ""
+                        )
+                    },
+                    onFailure = { /* Log error but continue with other channels */ }
+                )
+            }
+            
+            _uiState.update { it.copy(channelsEpg = epgMap) }
+        }
+    }
+    
+    fun getChannelEpg(streamId: String): ChannelEpg? {
+        return _uiState.value.channelsEpg[streamId]
     }
 
     override fun onCleared() {
