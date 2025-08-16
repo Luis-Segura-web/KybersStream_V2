@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Configuración por defecto para la aplicación -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <!-- Usar CAs del sistema por defecto -->
+            <certificates src="system"/>
+            <!-- Permitir certificados de usuario para debugging -->
+            <certificates src="user"/>
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Configuración específica para debug builds -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+    
+    <!-- Configuración para dominios de desarrollo y testing -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">192.168.1.0/24</domain>
+        <domain includeSubdomains="true">172.16.0.0/12</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        
+        <!-- Dominios comunes de proveedores IPTV que pueden usar HTTP -->
+        <domain includeSubdomains="true">xtream-codes.com</domain>
+        <domain includeSubdomains="true">stalker-portal.org</domain>
+        
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- Configuración más estricta para dominios específicos de producción -->
+    <domain-config cleartextTrafficPermitted="false">
+        <!-- Servicios de telemetría y analytics (solo HTTPS) -->
+        <domain includeSubdomains="true">analytics.google.com</domain>
+        <domain includeSubdomains="true">firebase.googleapis.com</domain>
+        <domain includeSubdomains="true">crashlytics.googleapis.com</domain>
+        
+        <!-- APIs de terceros -->
+        <domain includeSubdomains="true">api.github.com</domain>
+        <domain includeSubdomains="true">anthropic.com</domain>
+        
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+        
+        <!-- Pin certificados críticos para seguridad adicional -->
+        <pin-set expiration="2026-01-01">
+            <!-- Pin para Google APIs -->
+            <pin digest="SHA-256">7HIpactkIAq2Y49orFOOQKurWxmmSFZhBCoQYcRhJ3Y=</pin>
+            <pin digest="SHA-256">fEzVOUp4dF3gI0ZVPRJhFbSD608BUOaB9p/EWtGMlQs=</pin>
+        </pin-set>
+    </domain-config>
+    
+    <!-- Configuración para servidores IPTV personalizados -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Permitir servidores con IPs dinámicas comunes en IPTV -->
+        <domain includeSubdomains="true">*.m3u8</domain>
+        <domain includeSubdomains="true">*.ts</domain>
+        
+        <!-- Rangos de IP comunes para servidores IPTV -->
+        <domain includeSubdomains="true">*.ddns.net</domain>
+        <domain includeSubdomains="true">*.dyndns.org</domain>
+        <domain includeSubdomains="true">*.no-ip.org</domain>
+        
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- Configuración específica para certificados auto-firmados en desarrollo -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">staging.example.com</domain>
+        <domain includeSubdomains="true">dev.example.com</domain>
+        <domain includeSubdomains="true">test.local</domain>
+        
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+            <!-- Certificado específico para desarrollo si es necesario -->
+            <!-- <certificates src="@raw/dev_certificate"/> -->
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

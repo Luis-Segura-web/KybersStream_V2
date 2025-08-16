@@ -5,6 +5,9 @@ import com.kybers.stream.data.remote.dto.*
 import com.kybers.stream.domain.model.*
 import com.kybers.stream.domain.repository.UserRepository
 import com.kybers.stream.domain.repository.XtreamRepository
+import com.kybers.stream.data.cache.CacheManager
+import com.kybers.stream.data.cache.CacheConfigs
+import com.kybers.stream.domain.usecase.network.RetryStrategyUseCase
 import kotlinx.coroutines.flow.first
 import retrofit2.Retrofit
 import java.net.SocketTimeoutException
@@ -15,7 +18,9 @@ import javax.inject.Singleton
 @Singleton
 class XtreamRepositoryImpl @Inject constructor(
     private val userRepository: UserRepository,
-    private val retrofit: Retrofit
+    private val retrofit: Retrofit,
+    private val cacheManager: CacheManager,
+    private val retryStrategy: RetryStrategyUseCase
 ) : XtreamRepository {
 
     private suspend fun getCredentials(): Triple<String, String, String>? {
@@ -38,26 +43,44 @@ class XtreamRepositoryImpl @Inject constructor(
             val (server, username, password) = getCredentials() 
                 ?: return XtreamResult.Error("Usuario no autenticado", XtreamErrorCode.INVALID_CREDENTIALS)
             
-            val api = createApiForServer(server)
-            val response = api.getLiveCategories(username, password)
+            // Intentar obtener del caché
+            val cacheKey = "live_categories_${username}"
+            val cache = cacheManager.getCache<String, List<Category>>("categories", CacheConfigs.CATEGORIES)
             
-            if (response.isSuccessful) {
-                val categories = response.body()?.map { dto ->
-                    Category(
-                        categoryId = dto.categoryId,
-                        categoryName = dto.categoryName,
-                        parentId = dto.parentId,
-                        type = CategoryType.LIVE_TV
-                    )
-                } ?: emptyList()
-                XtreamResult.Success(categories)
-            } else {
-                XtreamResult.Error("Error del servidor: ${response.code()}", XtreamErrorCode.SERVER_ERROR)
+            cache.get(cacheKey)?.let { cachedCategories ->
+                return XtreamResult.Success(cachedCategories)
             }
-        } catch (e: UnknownHostException) {
-            XtreamResult.Error("No se puede conectar al servidor", XtreamErrorCode.NETWORK_ERROR)
-        } catch (e: SocketTimeoutException) {
-            XtreamResult.Error("Tiempo de espera agotado", XtreamErrorCode.TIMEOUT)
+            
+            // Si no está en caché, hacer llamada con reintentos
+            val result = retryStrategy.executeWithRetry(RetryStrategyUseCase.Configs.NORMAL) {
+                val api = createApiForServer(server)
+                val response = api.getLiveCategories(username, password)
+                
+                if (response.isSuccessful) {
+                    val categories = response.body()?.map { dto ->
+                        Category(
+                            categoryId = dto.categoryId,
+                            categoryName = dto.categoryName,
+                            parentId = dto.parentId,
+                            type = CategoryType.LIVE_TV
+                        )
+                    } ?: emptyList()
+                    
+                    // Guardar en caché
+                    cache.put(cacheKey, categories)
+                    categories
+                } else {
+                    throw RuntimeException("Error del servidor: ${response.code()}")
+                }
+            }
+            
+            result.fold(
+                onSuccess = { XtreamResult.Success(it) },
+                onFailure = { error ->
+                    val mappedError = com.kybers.stream.domain.model.NetworkErrorMapper.mapError(error)
+                    XtreamResult.Error(mappedError.userMessage, XtreamErrorCode.NETWORK_ERROR)
+                }
+            )
         } catch (e: Exception) {
             XtreamResult.Error("Error inesperado: ${e.message}", XtreamErrorCode.UNKNOWN)
         }

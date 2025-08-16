@@ -3,25 +3,23 @@
     "allow": [
       "ReadFile(**)",
       "WriteFile(**)",
-
       "Bash(cmd.exe:*)",
       "Bash(powershell.exe:*)",
-
       "Bash(.\\gradlew.bat:*)",
       "Bash(gradlew:*)",
-
       "GitClone(*)",
       "GitCommit(*)",
       "GitPush(*)",
       "GitPull(*)",
       "GitStatus(*)",
-
       "ReadFile(*.md)",
       "ReadFile(*.json)",
       "ReadFile(*.xml)",
       "ReadFile(*.pro)",
-
-      "WebFetch(domain:gzytv.vip)"
+      "WebFetch(domain:gzytv.vip)",
+      "Bash(.\\gradlew.bat compileDebugKotlin:*)",
+      "Bash(.gradlew.bat compileDebugKotlin)",
+      "Bash(mv:*)"
     ],
     "defaultMode": "acceptEdits"
   }

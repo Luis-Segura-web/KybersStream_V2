@@ -1,0 +1,530 @@
+package com.kybers.stream.presentation.components.accessibility
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.semantics.Role
+import androidx.compose.foundation.semantics.clearAndSetSemantics
+import androidx.compose.foundation.semantics.contentDescription
+import androidx.compose.foundation.semantics.semantics
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+/**
+ * Configuración de accesibilidad
+ */
+data class AccessibilityConfig(
+    val enableTalkBack: Boolean = true,
+    val enableVoiceAssistant: Boolean = true,
+    val enableHighContrast: Boolean = false,
+    val textScaleFactor: Float = 1.0f,
+    val minimumTouchTarget: androidx.compose.ui.unit.Dp = 48.dp,
+    val enableHapticFeedback: Boolean = true,
+    val enableAudioDescriptions: Boolean = false
+)
+
+/**
+ * Button accesible con tamaño mínimo de toque
+ */
+@Composable
+fun AccessibleButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    content: @Composable RowScope.() -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .semantics {
+                role = Role.Button
+                if (!enabled) {
+                    disabled()
+                }
+            },
+        enabled = enabled,
+        colors = colors,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+        content = content
+    )
+}
+
+/**
+ * IconButton accesible con descripción de contenido
+ */
+@Composable
+fun AccessibleIconButton(
+    onClick: () -> Unit,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    icon: ImageVector,
+    tint: androidx.compose.ui.graphics.Color = LocalContentColor.current
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+            .size(48.dp) // Tamaño mínimo de toque
+            .semantics {
+                this.contentDescription = contentDescription
+                role = Role.Button
+                if (!enabled) {
+                    disabled()
+                }
+            },
+        enabled = enabled
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = tint
+        )
+    }
+}
+
+/**
+ * Card accesible con focus y semántica apropiada
+ */
+@Composable
+fun AccessibleCard(
+    onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: androidx.compose.ui.graphics.Shape = CardDefaults.shape,
+    colors: CardColors = CardDefaults.cardColors(),
+    elevation: CardElevation = CardDefaults.cardElevation(),
+    border: androidx.compose.foundation.BorderStroke? = null,
+    contentDescription: String? = null,
+    role: Role = Role.Button,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val focusRequester = remember { FocusRequester() }
+    var isFocused by remember { mutableStateOf(false) }
+    
+    Card(
+        onClick = onClick ?: {},
+        modifier = modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged { isFocused = it.isFocused }
+            .semantics {
+                if (contentDescription != null) {
+                    this.contentDescription = contentDescription
+                }
+                this.role = role
+                if (!enabled) {
+                    disabled()
+                }
+                if (onClick != null) {
+                    clickable()
+                }
+            },
+        enabled = enabled && onClick != null,
+        shape = shape,
+        colors = colors,
+        elevation = elevation,
+        border = border,
+        content = content
+    )
+}
+
+/**
+ * Texto con soporte para escalado de fuentes
+ */
+@Composable
+fun AccessibleText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontWeight: FontWeight? = null,
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    semanticRole: String? = null,
+    isImportant: Boolean = false
+) {
+    val context = LocalContext.current
+    val scaledFontSize = if (fontSize != TextUnit.Unspecified) {
+        fontSize * context.resources.configuration.fontScale
+    } else {
+        style.fontSize * context.resources.configuration.fontScale
+    }
+    
+    Text(
+        text = text,
+        modifier = modifier.semantics {
+            if (semanticRole != null) {
+                contentDescription = "$semanticRole: $text"
+            }
+            if (isImportant) {
+                liveRegion = LiveRegionMode.Polite
+            }
+        },
+        style = style.copy(fontSize = scaledFontSize),
+        color = color,
+        fontWeight = fontWeight,
+        maxLines = maxLines,
+        overflow = overflow,
+        softWrap = softWrap
+    )
+}
+
+/**
+ * Texto que se adapta automáticamente al tamaño de fuente del sistema
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AdaptiveText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    maxLines: Int = Int.MAX_VALUE,
+    enableMarquee: Boolean = false,
+    isHeading: Boolean = false,
+    isImportant: Boolean = false
+) {
+    val context = LocalContext.current
+    val fontScale = context.resources.configuration.fontScale
+    
+    // Ajustar el tamaño según la escala del sistema
+    val adaptedStyle = when {
+        fontScale >= 1.3f -> style.copy(
+            fontSize = style.fontSize * 0.9f,
+            lineHeight = style.lineHeight * 0.95f
+        )
+        fontScale >= 1.15f -> style.copy(
+            fontSize = style.fontSize * 0.95f
+        )
+        else -> style
+    }
+    
+    Text(
+        text = text,
+        modifier = modifier
+            .then(
+                if (enableMarquee && fontScale >= 1.3f) {
+                    Modifier.basicMarquee()
+                } else {
+                    Modifier
+                }
+            )
+            .semantics {
+                if (isHeading) {
+                    heading()
+                }
+                if (isImportant) {
+                    liveRegion = LiveRegionMode.Polite
+                }
+            },
+        style = adaptedStyle,
+        maxLines = if (fontScale >= 1.3f) maxLines + 1 else maxLines,
+        overflow = if (enableMarquee) TextOverflow.Visible else TextOverflow.Ellipsis
+    )
+}
+
+/**
+ * Lista accesible con navegación por foco
+ */
+@Composable
+fun AccessibleLazyColumn(
+    modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical = if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    userScrollEnabled: Boolean = true,
+    content: LazyListScope.() -> Unit
+) {
+    LazyColumn(
+        modifier = modifier.semantics {
+            role = Role.Button // Lista navegable
+        },
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
+        userScrollEnabled = userScrollEnabled,
+        content = content
+    )
+}
+
+/**
+ * Switch accesible con etiquetas claras
+ */
+@Composable
+fun AccessibleSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    description: String? = null
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                enabled = enabled,
+                role = Role.Switch,
+                onClickLabel = if (checked) "Desactivar $label" else "Activar $label"
+            ) {
+                onCheckedChange(!checked)
+            }
+            .semantics(mergeDescendants = true) {
+                role = Role.Switch
+                this.stateDescription = if (checked) "Activado" else "Desactivado"
+                if (description != null) {
+                    contentDescription = "$label: $description"
+                }
+            }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            AdaptiveText(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                isImportant = false
+            )
+            
+            description?.let { desc ->
+                Spacer(modifier = Modifier.height(4.dp))
+                AdaptiveText(
+                    text = desc,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.width(16.dp))
+        
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
+            modifier = Modifier.semantics {
+                // Remover semántica duplicada
+                clearAndSetSemantics { }
+            }
+        )
+    }
+}
+
+/**
+ * Slider accesible con anuncios de valor
+ */
+@Composable
+fun AccessibleSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    steps: Int = 0,
+    label: String,
+    valueFormatter: (Float) -> String = { it.toString() },
+    onValueChangeFinished: (() -> Unit)? = null
+) {
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AdaptiveText(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            AdaptiveText(
+                text = valueFormatter(value),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "$label: ${valueFormatter(value)}"
+                    stateDescription = "Desliza para cambiar el valor"
+                },
+            enabled = enabled,
+            valueRange = valueRange,
+            steps = steps,
+            onValueChangeFinished = onValueChangeFinished
+        )
+    }
+}
+
+/**
+ * Helper para anuncios de accesibilidad
+ */
+@Composable
+fun rememberAccessibilityAnnouncer(): (String) -> Unit {
+    val view = LocalView.current
+    
+    return remember {
+        { message: String ->
+            view.announceForAccessibility(message)
+        }
+    }
+}
+
+/**
+ * Componente para anuncios en vivo (live regions)
+ */
+@Composable
+fun LiveRegionAnnouncement(
+    message: String,
+    modifier: Modifier = Modifier,
+    priority: LiveRegionMode = LiveRegionMode.Polite
+) {
+    Text(
+        text = message,
+        modifier = modifier.semantics {
+            liveRegion = priority
+            contentDescription = message
+        },
+        color = androidx.compose.ui.graphics.Color.Transparent,
+        fontSize = 0.sp
+    )
+}
+
+/**
+ * Botón con retroalimentación háptica
+ */
+@Composable
+fun HapticFeedbackButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    hapticStrength: HapticFeedbackType = HapticFeedbackType.LongPress,
+    content: @Composable RowScope.() -> Unit
+) {
+    val haptic = LocalHapticFeedback.current
+    
+    AccessibleButton(
+        onClick = {
+            haptic.performHapticFeedback(hapticStrength)
+            onClick()
+        },
+        modifier = modifier,
+        enabled = enabled,
+        content = content
+    )
+}
+
+/**
+ * Indicador de carga accesible
+ */
+@Composable
+fun AccessibleLoadingIndicator(
+    modifier: Modifier = Modifier,
+    message: String = "Cargando contenido",
+    isVisible: Boolean = true
+) {
+    if (isVisible) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .semantics {
+                    contentDescription = message
+                    liveRegion = LiveRegionMode.Polite
+                },
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            AdaptiveText(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+/**
+ * Utilidades para verificar configuraciones de accesibilidad
+ */
+object AccessibilityUtils {
+    
+    @Composable
+    fun isLargeFontScale(): Boolean {
+        val context = LocalContext.current
+        return context.resources.configuration.fontScale >= 1.3f
+    }
+    
+    @Composable
+    fun isTalkBackEnabled(): Boolean {
+        val context = LocalContext.current
+        val accessibilityManager = context.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager
+        return accessibilityManager.isEnabled && accessibilityManager.isTouchExplorationEnabled
+    }
+    
+    @Composable
+    fun getAdaptedSpacing(): Dp {
+        return if (isLargeFontScale()) 20.dp else 16.dp
+    }
+    
+    @Composable
+    fun getAdaptedIconSize(): Dp {
+        return if (isLargeFontScale()) 28.dp else 24.dp
+    }
+}
