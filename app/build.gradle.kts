@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
+    implementation("androidx.compose.material:material-icons-extended")
 
     // Arquitectura & DI
     implementation(libs.hilt.android)
@@ -102,7 +103,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.gson)
-    implementation(libs.kotlinx.serialization.json)
 
     // Media & ExoPlayer
     implementation(libs.media3.exoplayer)

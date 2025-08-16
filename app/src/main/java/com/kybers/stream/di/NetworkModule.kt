@@ -9,7 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterAdapter
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -49,7 +49,7 @@ object NetworkModule {
         return Retrofit.Builder()
             .baseUrl("http://example.com/") // Base URL temporal, se sobrescribirá por servidor
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterAdapter.create(gson))
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 }

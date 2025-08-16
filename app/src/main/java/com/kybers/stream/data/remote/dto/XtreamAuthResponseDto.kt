@@ -1,82 +1,81 @@
 package com.kybers.stream.data.remote.dto
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 
-@Serializable
 data class XtreamAuthResponseDto(
-    @SerialName("user_info")
+    @SerializedName("user_info")
     val userInfo: UserInfoDto? = null,
     
-    @SerialName("server_info")
+    @SerializedName("server_info")
     val serverInfo: ServerInfoDto? = null,
     
-    @SerialName("message")
+    @SerializedName("message")
     val message: String? = null,
     
-    @SerialName("status")
+    @SerializedName("status")
     val status: String? = null
 )
 
-@Serializable
 data class UserInfoDto(
-    @SerialName("username")
+    @SerializedName("username")
     val username: String = "",
     
-    @SerialName("password")
+    @SerializedName("password")
     val password: String = "",
     
-    @SerialName("message")
+    @SerializedName("message")
     val message: String = "",
     
-    @SerialName("auth")
+    @SerializedName("auth")
     val auth: Int = 0,
     
-    @SerialName("status")
+    @SerializedName("status")
     val status: String = "",
     
-    @SerialName("exp_date")
+    @SerializedName("exp_date")
     val expDate: String? = null,
     
-    @SerialName("is_trial")
+    @SerializedName("is_trial")
     val isTrial: String = "0",
     
-    @SerialName("active_cons")
+    @SerializedName("active_cons")
     val activeCons: String = "0",
     
-    @SerialName("created_at")
+    @SerializedName("created_at")
     val createdAt: String = "",
     
-    @SerialName("max_connections")
-    val maxConnections: String = "1"
+    @SerializedName("max_connections")
+    val maxConnections: String = "1",
+    
+    @SerializedName("allowed_output_formats")
+    val allowedOutputFormats: List<String> = emptyList()
 )
 
-@Serializable
 data class ServerInfoDto(
-    @SerialName("url")
+    @SerializedName("url")
     val url: String = "",
     
-    @SerialName("port")
+    @SerializedName("port")
     val port: String = "",
     
-    @SerialName("https_port")
+    @SerializedName("https_port")
     val httpsPort: String = "",
     
-    @SerialName("server_protocol")
+    @SerializedName("server_protocol")
     val serverProtocol: String = "",
     
-    @SerialName("rtmp_port")
+    @SerializedName("rtmp_port")
     val rtmpPort: String = "",
     
-    @SerialName("timezone")
+    @SerializedName("timezone")
     val timezone: String = "",
     
-    @SerialName("timestamp_now")
-    val timestampNow: String = "",
+    @SerializedName("timestamp_now")
+    val timestampNow: Long = 0L,
     
-    @SerialName("time_now")
+    @SerializedName("time_now")
     val timeNow: String = "",
     
-    @SerialName("process")
-    val process: String = ""
+    @SerializedName("process")
+    val process: Boolean = true
 )

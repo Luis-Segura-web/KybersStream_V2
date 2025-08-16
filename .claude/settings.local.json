@@ -4,7 +4,11 @@
       "Bash(.gradlew.bat assembleDebug)",
       "Bash(./gradlew:*)",
       "Bash(.\\gradlew.bat clean:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(.gradlew.bat clean)",
+      "Bash(gradlew.bat clean:*)",
+      "WebFetch(domain:gzytv.vip)"
     ],
     "deny": [],
     "ask": []

@@ -4,7 +4,7 @@
             "outputFile": "com.kybers.stream.app-mergeDebugResources-2:/values-v29/values-v29.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Administrator\\.gradle\\caches\\8.13\\transforms\\91628c2a49101ad0f339ac00c848c8ce\\transformed\\core-splashscreen-1.0.1\\res\\values-v29\\values-v29.xml",
+                    "source": "C:\\Users\\Administrator\\.gradle\\caches\\8.13\\transforms\\ff3855f4201aab149f0043b9fc0f5786\\transformed\\core-splashscreen-1.0.1\\res\\values-v29\\values-v29.xml",
                     "from": {
                         "startLines": "2,7",
                         "startColumns": "4,4",

@@ -1,0 +1,1 @@
+-keep,allowobfuscation,allowshrinking class com.kybers.stream.presentation.screens.series.SeriesViewModel
