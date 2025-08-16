@@ -82,12 +82,22 @@ class PlaybackManagerImpl @Inject constructor(
             }
 
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
-                val errorMessage = when (error.errorCode) {
-                    androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED -> "Error de conexión de red"
-                    androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT -> "Tiempo de espera agotado"
-                    androidx.media3.common.PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED -> "Formato de archivo no soportado"
-                    androidx.media3.common.PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED -> "Formato de manifiesto no soportado"
-                    androidx.media3.common.PlaybackException.ERROR_CODE_DECODER_INIT_FAILED -> "Error al inicializar el decodificador"
+                val errorMessage = when {
+                    // Detectar errores HTTP específicos
+                    error.cause is androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException -> {
+                        val httpError = error.cause as androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException
+                        when (httpError.responseCode) {
+                            404 -> "Stream no encontrado (404). Verifique que el canal esté disponible."
+                            401, 403 -> "Error de autenticación. Verifique sus credenciales."
+                            500, 502, 503 -> "Error del servidor. Intente más tarde."
+                            else -> "Error HTTP ${httpError.responseCode}: ${httpError.message}"
+                        }
+                    }
+                    error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED -> "Error de conexión de red"
+                    error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT -> "Tiempo de espera agotado"
+                    error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED -> "Formato de archivo no soportado"
+                    error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED -> "Formato de manifiesto no soportado"
+                    error.errorCode == androidx.media3.common.PlaybackException.ERROR_CODE_DECODER_INIT_FAILED -> "Error al inicializar el decodificador"
                     else -> "Error de reproducción: ${error.message}"
                 }
 

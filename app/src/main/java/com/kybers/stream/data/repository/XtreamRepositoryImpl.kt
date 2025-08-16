@@ -248,31 +248,25 @@ class XtreamRepositoryImpl @Inject constructor(
                 val detailDto = response.body()
                 if (detailDto != null) {
                     val movieDetail = MovieDetail(
-                        info = MovieInfo(
-                            movieImage = detailDto.info.movieImage,
-                            name = detailDto.info.name,
-                            tmdbId = detailDto.info.tmdbId,
-                            backdrop = detailDto.info.backdrop,
-                            youtubeTrailer = detailDto.info.youtubeTrailer,
-                            genre = detailDto.info.genre,
-                            plot = detailDto.info.plot,
-                            cast = detailDto.info.cast,
-                            rating = detailDto.info.rating,
-                            director = detailDto.info.director,
-                            releaseDate = detailDto.info.releaseDate,
-                            backdropPath = detailDto.info.backdropPath,
-                            durationSecs = detailDto.info.durationSecs,
-                            duration = detailDto.info.duration
-                        ),
-                        movieData = MovieData(
-                            streamId = detailDto.movieData.streamId,
-                            name = detailDto.movieData.name,
-                            addedTimestamp = detailDto.movieData.added.toLongOrNull() ?: 0L,
-                            categoryId = detailDto.movieData.categoryId,
-                            containerExtension = detailDto.movieData.containerExtension,
-                            customSid = detailDto.movieData.customSid,
-                            directSource = detailDto.movieData.directSource
-                        )
+                        id = detailDto.movieData.streamId,
+                        name = detailDto.info.name,
+                        streamId = detailDto.movieData.streamId,
+                        year = detailDto.info.releaseDate?.take(4),
+                        rating = detailDto.info.rating,
+                        duration = detailDto.info.duration,
+                        quality = null, // Not available in DTO
+                        genre = detailDto.info.genre,
+                        plot = detailDto.info.plot,
+                        cast = detailDto.info.cast,
+                        director = detailDto.info.director,
+                        poster = detailDto.info.movieImage,
+                        backdrop = detailDto.info.backdrop,
+                        trailerUrl = detailDto.info.youtubeTrailer,
+                        imdbRating = null, // Parse from rating if needed
+                        tmdbRating = detailDto.info.tmdbId,
+                        language = null, // Not available in DTO
+                        country = null, // Not available in DTO
+                        releaseDate = detailDto.info.releaseDate
                     )
                     XtreamResult.Success(movieDetail)
                 } else {
@@ -301,61 +295,55 @@ class XtreamRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val detailDto = response.body()
                 if (detailDto != null) {
-                    val seriesDetail = SeriesDetail(
-                        seasons = detailDto.seasons.map { seasonDto ->
-                            Season(
-                                airDate = seasonDto.airDate,
-                                episodeCount = seasonDto.episodeCount,
-                                id = seasonDto.id,
-                                name = seasonDto.name,
-                                seasonNumber = seasonDto.seasonNumber,
-                                overview = seasonDto.overview,
-                                cover = seasonDto.cover,
-                                coverBig = seasonDto.coverBig
+                    // Convert episodes map to seasons with episodes
+                    val seasonsWithEpisodes = detailDto.seasons.map { seasonDto ->
+                        val seasonEpisodes = detailDto.episodes[seasonDto.seasonNumber]?.map { episodeDto ->
+                            Episode(
+                                id = episodeDto.id,
+                                episodeNumber = episodeDto.episodeNum,
+                                seasonNumber = episodeDto.season,
+                                name = episodeDto.title,
+                                overview = episodeDto.info.plot,
+                                runtime = episodeDto.info.duration,
+                                airDate = episodeDto.info.releaseDate,
+                                still = episodeDto.info.movieImage,
+                                rating = episodeDto.info.rating.toString(),
+                                streamUrl = null // Will be set during playback
                             )
-                        },
-                        info = SeriesInfo(
-                            name = detailDto.info.name,
-                            cover = detailDto.info.cover,
-                            youtubeTrailer = detailDto.info.youtubeTrailer,
-                            genre = detailDto.info.genre,
-                            releaseDate = detailDto.info.releaseDate,
-                            plot = detailDto.info.plot,
-                            cast = detailDto.info.cast,
-                            rating = detailDto.info.rating,
-                            rating5Based = detailDto.info.rating5Based,
-                            director = detailDto.info.director,
-                            backdropPath = detailDto.info.backdropPath,
-                            lastModified = detailDto.info.lastModified.toLongOrNull() ?: 0L,
-                            episodeRunTime = detailDto.info.episodeRunTime,
-                            categoryId = detailDto.info.categoryId
-                        ),
-                        episodes = detailDto.episodes.mapValues { (_, episodeList) ->
-                            episodeList.map { episodeDto ->
-                                Episode(
-                                    id = episodeDto.id,
-                                    episodeNum = episodeDto.episodeNum,
-                                    title = episodeDto.title,
-                                    containerExtension = episodeDto.containerExtension,
-                                    addedTimestamp = episodeDto.added.toLongOrNull() ?: 0L,
-                                    info = EpisodeInfo(
-                                        movieImage = episodeDto.info.movieImage,
-                                        releaseDate = episodeDto.info.releaseDate,
-                                        youtubeTrailer = episodeDto.info.youtubeTrailer,
-                                        plot = episodeDto.info.plot,
-                                        cast = episodeDto.info.cast,
-                                        rating = episodeDto.info.rating,
-                                        rating5Based = episodeDto.info.rating5Based,
-                                        director = episodeDto.info.director,
-                                        durationSecs = episodeDto.info.durationSecs,
-                                        duration = episodeDto.info.duration
-                                    ),
-                                    season = episodeDto.season,
-                                    customSid = episodeDto.customSid,
-                                    directSource = episodeDto.directSource
-                                )
-                            }
-                        }
+                        } ?: emptyList()
+                        
+                        Season(
+                            seasonNumber = seasonDto.seasonNumber.toIntOrNull() ?: 1,
+                            name = seasonDto.name,
+                            overview = seasonDto.overview,
+                            airDate = seasonDto.airDate,
+                            poster = seasonDto.cover,
+                            episodes = seasonEpisodes,
+                            episodeCount = seasonDto.episodeCount
+                        )
+                    }
+                    
+                    val seriesDetail = SeriesDetail(
+                        id = seriesId,
+                        name = detailDto.info.name,
+                        seriesId = seriesId,
+                        year = detailDto.info.releaseDate?.take(4),
+                        rating = detailDto.info.rating,
+                        genre = detailDto.info.genre,
+                        plot = detailDto.info.plot,
+                        cast = detailDto.info.cast,
+                        director = detailDto.info.director,
+                        poster = detailDto.info.cover,
+                        backdrop = detailDto.info.backdropPath.firstOrNull(),
+                        imdbRating = null, // Parse from rating if needed
+                        tmdbRating = null, // Not available in DTO
+                        language = null, // Not available in DTO
+                        country = null, // Not available in DTO
+                        releaseDate = detailDto.info.releaseDate,
+                        seasons = seasonsWithEpisodes,
+                        totalSeasons = seasonsWithEpisodes.size,
+                        totalEpisodes = seasonsWithEpisodes.sumOf { it.episodes.size },
+                        status = null // Not available in DTO
                     )
                     XtreamResult.Success(seriesDetail)
                 } else {

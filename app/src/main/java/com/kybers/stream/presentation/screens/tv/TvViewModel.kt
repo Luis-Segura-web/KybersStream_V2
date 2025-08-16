@@ -12,6 +12,7 @@ import com.kybers.stream.domain.usecase.search.SearchScope
 import com.kybers.stream.domain.usecase.xtream.*
 import com.kybers.stream.domain.usecase.epg.GetChannelEpgUseCase
 import com.kybers.stream.domain.usecase.epg.RefreshEpgUseCase
+import com.kybers.stream.domain.repository.UserRepository
 import com.kybers.stream.presentation.components.ViewMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -42,7 +43,8 @@ class TvViewModel @Inject constructor(
     private val updateUserPreferencesUseCase: UpdateUserPreferencesUseCase,
     private val playbackManager: PlaybackManager,
     private val getChannelEpgUseCase: GetChannelEpgUseCase,
-    private val refreshEpgUseCase: RefreshEpgUseCase
+    private val refreshEpgUseCase: RefreshEpgUseCase,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TvUiState())
@@ -218,11 +220,50 @@ class TvViewModel @Inject constructor(
         }
     }
 
-    private fun buildLiveStreamUrl(channel: Channel): String {
-        // Construir URL del stream usando datos de autenticación
-        // Esto debería usar el formato de Xtream Codes: http://server:port/username/password/streamId
-        // TODO: Obtener credenciales del DataStore y construir URL apropiada
-        return "http://example.com/stream/${channel.streamId}.m3u8"
+    private suspend fun buildLiveStreamUrl(channel: Channel): String {
+        return try {
+            // Obtener el perfil de usuario actual de forma síncrona
+            val currentUser = userRepository.getCurrentUser().first()
+            
+            if (currentUser != null && currentUser.server.isNotEmpty() && 
+                currentUser.username.isNotEmpty() && currentUser.password.isNotEmpty()) {
+                
+                // Construir URL del stream usando el formato de Xtream Codes
+                // Formato para HLS: http://server:port/username/password/streamId.m3u8
+                // Formato para TS: http://server:port/username/password/streamId
+                val baseUrl = currentUser.server.removeSuffix("/")
+                
+                // Por defecto usar HLS (.m3u8) que es más estable para TV en vivo
+                val streamUrl = "${baseUrl}/${currentUser.username}/${currentUser.password}/${channel.streamId}.m3u8"
+                
+                // Log para debugging (remover en producción)
+                println("DEBUG: Construyendo URL de stream: $streamUrl")
+                
+                streamUrl
+            } else {
+                // Si no hay credenciales válidas, lanzar error específico
+                throw IllegalStateException("No hay usuario autenticado. Por favor, inicie sesión nuevamente.")
+            }
+        } catch (e: Exception) {
+            // Propagar el error con mensaje específico
+            when (e) {
+                is IllegalStateException -> throw e
+                else -> throw IllegalStateException("Error al obtener credenciales de usuario: ${e.message}", e)
+            }
+        }
+    }
+    
+    private suspend fun getAlternativeStreamUrl(channel: Channel): String? {
+        return try {
+            val currentUser = userRepository.getCurrentUser().first()
+            if (currentUser != null) {
+                val baseUrl = currentUser.server.removeSuffix("/")
+                // Intentar con formato TS sin extensión
+                "${baseUrl}/${currentUser.username}/${currentUser.password}/${channel.streamId}"
+            } else null
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun toggleFavorite(channel: Channel) {

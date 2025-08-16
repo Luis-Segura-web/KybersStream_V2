@@ -2,6 +2,7 @@ package com.kybers.stream.di
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.kybers.stream.data.remote.api.XtreamApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,5 +52,11 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideXtreamApi(retrofit: Retrofit): XtreamApi {
+        return retrofit.create(XtreamApi::class.java)
     }
 }
