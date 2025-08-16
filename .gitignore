@@ -1,0 +1,49 @@
+# --- Android/Gradle ---
+# Build y caches locales (no se versionan)
+.gradle/
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Config local de Android Studio/SDK (no versionar)
+local.properties
+
+# Secrets (usa el plugin de Secrets Gradle o props locales)
+secrets.properties
+
+# Logs, dumps y temporales comunes
+*.log
+*.tmp
+*.orig
+
+# --- Android Studio / JetBrains ---
+# Opción A (simple y segura): ignorar todo .idea
+.idea/
+*.iml
+
+# (Opcional) Si tu equipo quiere COMPARTIR estilos de código, elimina la línea ".idea/"
+# y en su lugar ignora sólo archivos ruidosos; conserva codeStyles/:
+# .idea/**/workspace.xml
+# .idea/**/tasks.xml
+# .idea/**/usage.statistics.xml
+# .idea/**/dictionaries
+# .idea/**/shelf
+# .idea/**/contentModel.xml
+# *.iml
+
+# --- Sistemas operativos ---
+.DS_Store
+Thumbs.db
+
+# --- Keystores (¡nunca subas llaves privadas!) ---
+*.jks
+*.keystore
+keystore.properties
+
+# --- Gradle Wrapper (NO ignorar) ---
+# A PROPÓSITO no se ignoran:
+# gradlew
+# gradlew.bat
+# gradle/wrapper/gradle-wrapper.jar
+# gradle/wrapper/gradle-wrapper.properties

@@ -1,3 +1,5 @@
+// app/build.gradle.kts
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -21,9 +23,7 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
@@ -36,12 +36,13 @@ android {
         }
     }
 
+    // Java toolchain para Android (válido en AGP 8.x)
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // Compose/Build features
+    // Compose / Build features
     buildFeatures {
         compose = true
         buildConfig = true
@@ -59,16 +60,13 @@ android {
     }
 }
 
-/**
- * Kotlin 2.2+ — migración a compilerOptions DSL (deprecates kotlinOptions.jvmTarget)
- * y se fija la toolchain a 17.
- */
+// Kotlin 2.x: usar compilerOptions (kotlinOptions está deprecado con error)
 kotlin {
     jvmToolchain(17)
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
-        // Si tienes args extra, agrégalas aquí:
-        // freeCompilerArgs.addAll("-Xcontext-receivers")
+        // Si necesitas flags extra, agrégalas aquí:
+        // freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
@@ -77,6 +75,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.material)
+    implementation(libs.androidx.core.splashscreen)
 
     // Compose BOM y UI
     implementation(platform(libs.compose.bom))
@@ -103,10 +102,14 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.gson)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit.kotlinx.serialization)
 
     // Media & ExoPlayer
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
+    implementation(libs.media3.exoplayer.dash)
+    implementation(libs.media3.datasource.okhttp)
     implementation(libs.media3.ui)
     implementation(libs.media3.common)
 
@@ -124,10 +127,6 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
-
-    // Splash
-    implementation(libs.androidx.core.splashscreen)
-
 
     // Debug
     debugImplementation(libs.compose.ui.tooling)

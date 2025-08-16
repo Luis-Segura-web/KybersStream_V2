@@ -86,7 +86,7 @@ fun MoviesScreen(
             }
             uiState.error != null -> {
                 ErrorMessage(
-                    error = uiState.error,
+                    error = uiState.error!!,
                     onRetry = { viewModel.loadMovies() },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -178,9 +178,9 @@ fun SearchAndFilterSection(
                 )
                 categories.forEach { category ->
                     DropdownMenuItem(
-                        text = { Text(category.name) },
+                        text = { Text(category.categoryName) },
                         onClick = {
-                            onCategorySelected(category.name)
+                            onCategorySelected(category.categoryName)
                         }
                     )
                 }
@@ -207,7 +207,7 @@ fun MoviesList(
             ) {
                 items(
                     items = movies,
-                    key = { it.id }
+                    key = { it.streamId }
                 ) { movie ->
                     MovieGridItem(
                         movie = movie,
@@ -224,7 +224,7 @@ fun MoviesList(
             ) {
                 items(
                     items = movies,
-                    key = { it.id }
+                    key = { it.streamId }
                 ) { movie ->
                     MovieListItem(
                         movie = movie,
