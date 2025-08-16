@@ -10,11 +10,12 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import androidx.media3.exoplayer.source.dash.DashMediaSource
-import androidx.media3.exoplayer.source.hls.HlsMediaSource
+import androidx.media3.exoplayer.hls.HlsMediaSource
+import androidx.media3.exoplayer.dash.DashMediaSource
 import com.kybers.stream.domain.manager.PlaybackManager
 import com.kybers.stream.domain.model.*
 import com.kybers.stream.domain.usecase.playback.SavePlaybackProgressUseCase
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,7 @@ import javax.inject.Singleton
 
 @Singleton
 class PlaybackManagerImpl @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
     private val exoPlayerInstance: ExoPlayer,
     private val dataSourceFactory: DataSource.Factory,
     private val savePlaybackProgressUseCase: SavePlaybackProgressUseCase

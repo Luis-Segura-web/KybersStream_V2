@@ -115,9 +115,9 @@ fun SettingsScreen(
         // Control parental
         SettingsSection(title = "Control parental") {
             ParentalControlSettingItem(
-                isEnabled = preferences.parentalControlEnabled,
+                enabled = preferences.parentalControlEnabled,
                 onToggle = { viewModel.toggleParentalControl() },
-                onSetPin = { viewModel.showSetPinDialog() }
+                onShowSetPin = { viewModel.showSetPinDialog() }
             )
         }
         

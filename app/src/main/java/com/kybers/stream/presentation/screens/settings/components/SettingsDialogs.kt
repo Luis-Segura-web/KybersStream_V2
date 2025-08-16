@@ -83,11 +83,13 @@ fun SetPinDialog(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Arrangement.End)
+                    horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text("Cancelar")
                     }
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
                     
                     Button(
                         onClick = {

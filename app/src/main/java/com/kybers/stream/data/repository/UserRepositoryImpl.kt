@@ -126,11 +126,14 @@ class UserRepositoryImpl @Inject constructor(
                 if (authResponse?.userInfo?.auth == 1) {
                     val serverInfo = authResponse.serverInfo?.let { 
                         ServerInfo(
+                            url = request.server,
+                            port = "80",
+                            httpsPort = "443",
                             serverProtocol = it.serverProtocol,
-                            serverVersion = "",
+                            rtmpPort = "1935",
+                            timezone = "UTC",
                             timestampNow = it.timestampNow,
-                            timeNow = it.timeNow,
-                            allowedOutputFormats = listOf("m3u8", "ts")
+                            timeNow = it.timeNow
                         )
                     }
                     

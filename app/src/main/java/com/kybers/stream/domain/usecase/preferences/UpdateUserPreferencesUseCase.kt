@@ -30,4 +30,20 @@ class UpdateUserPreferencesUseCase @Inject constructor(
     suspend fun updateParentalControl(enabled: Boolean, pin: String?, blockedCategories: Set<String>): Result<Unit> {
         return userPreferencesRepository.updateParentalControl(enabled, pin, blockedCategories)
     }
+    
+    suspend fun updateAudioLanguage(language: String): Result<Unit> {
+        return userPreferencesRepository.updateAudioLanguage(language)
+    }
+    
+    suspend fun updateAutoplayNextEpisode(enabled: Boolean): Result<Unit> {
+        return userPreferencesRepository.updateAutoplayNextEpisode(enabled)
+    }
+    
+    suspend fun updateKeepScreenOn(enabled: Boolean): Result<Unit> {
+        return userPreferencesRepository.updateKeepScreenOn(enabled)
+    }
+    
+    suspend fun updateEpgSettings(timeFormat: String, timezone: String): Result<Unit> {
+        return userPreferencesRepository.updateEpgSettings(timeFormat, timezone)
+    }
 }
