@@ -1,3 +1,7 @@
+// app/build.gradle.kts
+
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,9 +23,7 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
@@ -34,12 +36,13 @@ android {
         }
     }
 
+    // Java toolchain para Android (válido en AGP 8.x)
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // Compose/Build features
+    // Compose / Build features
     buildFeatures {
         compose = true
         buildConfig = true
@@ -57,19 +60,13 @@ android {
     }
 }
 
-// Kotlin configuration para 1.9.0
+// Kotlin 2.x: usar compilerOptions (kotlinOptions está deprecado con error)
 kotlin {
     jvmToolchain(17)
-}
-
-compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "17"
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+        // Si necesitas flags extra, agrégalas aquí:
+        // freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
@@ -78,6 +75,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.material)
+    implementation(libs.androidx.core.splashscreen)
 
     // Compose BOM y UI
     implementation(platform(libs.compose.bom))
@@ -104,6 +102,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.gson)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.retrofit.kotlinx.serialization)
 
     // Media & ExoPlayer
     implementation(libs.media3.exoplayer)
@@ -127,10 +127,6 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
-
-    // Splash
-    implementation(libs.androidx.core.splashscreen)
-
 
     // Debug
     debugImplementation(libs.compose.ui.tooling)

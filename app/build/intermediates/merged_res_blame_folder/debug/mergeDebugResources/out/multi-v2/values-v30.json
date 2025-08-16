@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.kybers.stream.app-mergeDebugResources-2:/values-v30/values-v30.xml",
+            "outputFile": "com.kybers.stream.app-mergeDebugResources-72:/values-v30/values-v30.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Administrator\\.gradle\\caches\\8.13\\transforms\\6a0a836160e9d11b43ed436a96a10b85\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
+                    "source": "C:\\GitHub\\Kyber-Stream\\.gradle\\caches\\8.13\\transforms\\0c0245eac43794b3c1eeda863e8864b5\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
