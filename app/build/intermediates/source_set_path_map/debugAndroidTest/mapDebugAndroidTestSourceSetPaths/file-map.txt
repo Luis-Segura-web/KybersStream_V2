@@ -1,4 +1,0 @@
-com.kybers.stream.test.app-androidTest-0 C:\GitHub\KybersStream_V2\app\build\generated\res\resValues\androidTest\debug
-com.kybers.stream.test.app-mergeDebugAndroidTestResources-1 C:\GitHub\KybersStream_V2\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
-com.kybers.stream.test.app-mergeDebugAndroidTestResources-2 C:\GitHub\KybersStream_V2\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
-com.kybers.stream.test.app-debugAndroidTest-3 C:\GitHub\KybersStream_V2\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources
