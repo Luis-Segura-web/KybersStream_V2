@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -59,16 +57,19 @@ android {
     }
 }
 
-/**
- * Kotlin 2.2+ — migración a compilerOptions DSL (deprecates kotlinOptions.jvmTarget)
- * y se fija la toolchain a 17.
- */
+// Kotlin configuration para 1.9.0
 kotlin {
     jvmToolchain(17)
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
-        // Si tienes args extra, agrégalas aquí:
-        // freeCompilerArgs.addAll("-Xcontext-receivers")
+}
+
+compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
