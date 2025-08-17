@@ -3,6 +3,7 @@ package com.kybers.stream.presentation.screens.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kybers.stream.domain.model.AuthResult
+import com.kybers.stream.domain.model.AuthErrorCode
 import com.kybers.stream.domain.model.LoginRequest
 import com.kybers.stream.domain.model.UserProfile
 import com.kybers.stream.domain.usecase.GetSavedProfilesUseCase
@@ -117,10 +118,21 @@ class LoginViewModel @Inject constructor(
                     }
                 }
                 is AuthResult.Error -> {
+                    val errorMessage = when (result.code) {
+                        AuthErrorCode.ACCOUNT_EXPIRED -> "Tu suscripción ha expirado. Por favor contacta a tu proveedor de servicios para renovarla."
+                        AuthErrorCode.INVALID_CREDENTIALS -> "Credenciales incorrectas. Verifica tu usuario y contraseña."
+                        AuthErrorCode.NETWORK_ERROR -> "Sin conexión a internet. Verifica tu conexión e inténtalo nuevamente."
+                        AuthErrorCode.SERVER_ERROR -> "Error del servidor. Inténtalo más tarde."
+                        AuthErrorCode.TIMEOUT -> "Tiempo de espera agotado. Verifica tu conexión."
+                        else -> result.message
+                    }
+                    
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = result.message,
-                        isLoginSuccessful = false
+                        errorMessage = errorMessage,
+                        errorCode = result.code,
+                        isLoginSuccessful = false,
+                        showExpiredAccountDialog = result.code == AuthErrorCode.ACCOUNT_EXPIRED
                     )
                 }
                 is AuthResult.Loading -> {
@@ -246,6 +258,22 @@ class LoginViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+    
+    fun dismissExpiredAccountDialog() {
+        _uiState.value = _uiState.value.copy(showExpiredAccountDialog = false)
+    }
+    
+    fun onContactProvider() {
+        // TODO: Implement contact provider functionality
+        // For now, just dismiss the dialog
+        dismissExpiredAccountDialog()
+    }
+    
+    fun onLogoutFromExpiredDialog() {
+        dismissExpiredAccountDialog()
+        // Clear form data
+        _uiState.value = LoginUiState()
     }
 
     fun resetLoginSuccess() {

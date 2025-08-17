@@ -12,6 +12,7 @@ enum class AuthErrorCode {
     SERVER_ERROR,
     INVALID_URL,
     TIMEOUT,
+    ACCOUNT_EXPIRED,
     UNKNOWN
 }
 

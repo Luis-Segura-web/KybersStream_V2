@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kybers.stream.presentation.components.accessibility.AccessibleButton
 import com.kybers.stream.presentation.components.accessibility.AdaptiveText
+import com.kybers.stream.presentation.components.dialogs.ExpiredAccountDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -413,6 +414,14 @@ fun LoginScreen(
                 }
             }
         }
+
+        // Diálogo de cuenta expirada
+        ExpiredAccountDialog(
+            isVisible = uiState.showExpiredAccountDialog,
+            onContactProvider = viewModel::onContactProvider,
+            onLogout = viewModel::onLogoutFromExpiredDialog,
+            onDismiss = viewModel::dismissExpiredAccountDialog
+        )
 
         SnackbarHost(
             hostState = snackbarHostState,

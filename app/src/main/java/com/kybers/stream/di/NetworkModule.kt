@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.kybers.stream.data.remote.api.XtreamApi
 import com.kybers.stream.data.remote.api.TMDBApi
+import com.kybers.stream.data.remote.interceptor.ExpiredAccountInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,7 +43,10 @@ object NetworkModule {
             level = HttpLoggingInterceptor.Level.BODY
         }
         
+        val expiredAccountInterceptor = ExpiredAccountInterceptor()
+        
         return OkHttpClient.Builder()
+            .addInterceptor(expiredAccountInterceptor) // Debe ir antes del logging
             .addInterceptor(loggingInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)

@@ -124,7 +124,16 @@ class UserRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 val authResponse = response.body()
                 
-                if (authResponse?.userInfo?.auth == 1) {
+                // Verificar si la respuesta es nula o indica error de autenticación
+                if (authResponse == null) {
+                    // Probablemente es una respuesta HTML de error
+                    return AuthResult.Error(
+                        message = "Tu suscripción ha expirado o las credenciales son incorrectas. Por favor contacta a tu proveedor de servicios.",
+                        code = AuthErrorCode.ACCOUNT_EXPIRED
+                    )
+                }
+                
+                if (authResponse.userInfo?.auth == 1) {
                     val serverInfo = authResponse.serverInfo?.let { 
                         ServerInfo(
                             url = request.server,
@@ -158,10 +167,18 @@ class UserRepositoryImpl @Inject constructor(
                     )
                 }
             } else {
-                AuthResult.Error(
-                    message = "Error del servidor: ${response.code()}",
-                    code = AuthErrorCode.SERVER_ERROR
-                )
+                // Verificar si es un error 401 (de nuestro interceptor de cuenta expirada)
+                if (response.code() == 401) {
+                    AuthResult.Error(
+                        message = "Tu suscripción ha expirado. Por favor contacta a tu proveedor de servicios.",
+                        code = AuthErrorCode.ACCOUNT_EXPIRED
+                    )
+                } else {
+                    AuthResult.Error(
+                        message = "Error del servidor: ${response.code()}",
+                        code = AuthErrorCode.SERVER_ERROR
+                    )
+                }
             }
         } catch (e: UnknownHostException) {
             AuthResult.Error(

@@ -1,6 +1,7 @@
 package com.kybers.stream.presentation.screens.login
 
 import com.kybers.stream.domain.model.UserProfile
+import com.kybers.stream.domain.model.AuthErrorCode
 
 data class LoginUiState(
     val server: String = "",
@@ -11,6 +12,7 @@ data class LoginUiState(
     val isValidatingCredentials: Boolean = false,
     val isConnectingToServer: Boolean = false,
     val errorMessage: String? = null,
+    val errorCode: AuthErrorCode? = null,
     val savedProfiles: List<UserProfile> = emptyList(),
     val selectedProfile: UserProfile? = null,
     val isLoginSuccessful: Boolean = false,
@@ -18,7 +20,8 @@ data class LoginUiState(
     val usernameError: String? = null,
     val passwordError: String? = null,
     val syncUiState: SyncUiState = SyncUiState(),
-    val authenticatedUser: UserProfile? = null
+    val authenticatedUser: UserProfile? = null,
+    val showExpiredAccountDialog: Boolean = false
 ) {
     val isFormValid: Boolean
         get() = server.isNotBlank() && 

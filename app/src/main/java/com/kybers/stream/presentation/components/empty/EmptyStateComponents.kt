@@ -32,6 +32,7 @@ sealed class EmptyStateType {
     object Unauthorized : EmptyStateType()
     object Maintenance : EmptyStateType()
     object ParentalBlocked : EmptyStateType()
+    object AccountExpired : EmptyStateType()
     data class Custom(
         val icon: ImageVector,
         val title: String,
@@ -116,6 +117,14 @@ object EmptyStateConfigs {
             description = "Este contenido está restringido por el control parental. Contacta al administrador.",
             actionText = "Desbloquear",
             secondaryActionText = "Ver otros"
+        )
+        
+        is EmptyStateType.AccountExpired -> EmptyStateConfig(
+            icon = Icons.Default.ErrorOutline,
+            title = "Suscripción expirada",
+            description = "Tu suscripción ha expirado. Por favor contacta a tu proveedor de servicios para renovarla.",
+            actionText = "Contactar proveedor",
+            secondaryActionText = "Cerrar sesión"
         )
         
         is EmptyStateType.Custom -> EmptyStateConfig(
