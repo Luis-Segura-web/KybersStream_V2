@@ -51,6 +51,7 @@ import com.kybers.stream.presentation.components.discovery.LoadingCarousel
 import com.kybers.stream.presentation.components.discovery.ErrorCarousel
 import com.kybers.stream.presentation.components.accessibility.AdaptiveText
 import com.kybers.stream.presentation.components.loading.SkeletonComponents
+import com.kybers.stream.presentation.components.tmdb.GroupedTMDBSection
 import kotlinx.coroutines.delay
 
 enum class BottomNavItem(
@@ -259,7 +260,31 @@ fun HomeTabContent(
                     }
                 }
                 
-                // Carruseles de contenido por categoría
+                // Contenido agrupado por TMDB (Películas)
+                if (uiState.groupedMovies.isNotEmpty()) {
+                    item {
+                        GroupedTMDBSection(
+                            title = "Películas Destacadas",
+                            groupedContent = uiState.groupedMovies,
+                            onGroupClick = { group -> viewModel.onGroupedContentClick(group) },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+                
+                // Contenido agrupado por TMDB (Series)
+                if (uiState.groupedSeries.isNotEmpty()) {
+                    item {
+                        GroupedTMDBSection(
+                            title = "Series Destacadas",
+                            groupedContent = uiState.groupedSeries,
+                            onGroupClick = { group -> viewModel.onGroupedContentClick(group) },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+                
+                // Carruseles de contenido por categoría (legacy)
                 discoveryData.sections.forEach { section ->
                     section.carousels.forEach { carousel ->
                         item(key = carousel.id) {

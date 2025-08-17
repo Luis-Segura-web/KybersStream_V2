@@ -3,12 +3,14 @@ package com.kybers.stream.di
 import com.kybers.stream.data.repository.DiscoveryRepositoryImpl
 import com.kybers.stream.data.repository.FavoriteRepositoryImpl
 import com.kybers.stream.data.repository.PlaybackProgressRepositoryImpl
+import com.kybers.stream.data.repository.TMDBRepositoryImpl
 import com.kybers.stream.data.repository.UserPreferencesRepositoryImpl
 import com.kybers.stream.data.repository.UserRepositoryImpl
 import com.kybers.stream.data.repository.XtreamRepositoryImpl
 import com.kybers.stream.domain.repository.DiscoveryRepository
 import com.kybers.stream.domain.repository.FavoriteRepository
 import com.kybers.stream.domain.repository.PlaybackProgressRepository
+import com.kybers.stream.domain.repository.TMDBRepository
 import com.kybers.stream.domain.repository.UserPreferencesRepository
 import com.kybers.stream.domain.repository.UserRepository
 import com.kybers.stream.domain.repository.XtreamRepository
@@ -57,4 +59,10 @@ abstract class RepositoryModule {
     abstract fun bindDiscoveryRepository(
         discoveryRepositoryImpl: DiscoveryRepositoryImpl
     ): DiscoveryRepository
+    
+    @Binds
+    @Singleton
+    abstract fun bindTMDBRepository(
+        tmdbRepositoryImpl: TMDBRepositoryImpl
+    ): TMDBRepository
 }

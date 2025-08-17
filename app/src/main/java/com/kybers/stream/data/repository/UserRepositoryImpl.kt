@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import retrofit2.Retrofit
+import com.kybers.stream.di.XtreamRetrofit
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.UUID
@@ -26,7 +27,7 @@ import javax.inject.Singleton
 @Singleton
 class UserRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-    private val retrofit: Retrofit
+    @XtreamRetrofit private val retrofit: Retrofit
 ) : UserRepository {
     
     companion object {

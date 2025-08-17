@@ -5,7 +5,9 @@ import androidx.room.Room
 import com.kybers.stream.data.local.dao.EpgDao
 import com.kybers.stream.data.local.dao.FavoriteDao
 import com.kybers.stream.data.local.dao.PlaybackProgressDao
+import com.kybers.stream.data.local.dao.TMDBCacheDao
 import com.kybers.stream.data.local.dao.UserPreferencesDao
+import com.kybers.stream.data.local.dao.XtreamCacheDao
 import com.kybers.stream.data.local.database.KybersStreamDatabase
 import dagger.Module
 import dagger.Provides
@@ -44,5 +46,15 @@ object DatabaseModule {
     @Provides
     fun provideEpgDao(database: KybersStreamDatabase): EpgDao {
         return database.epgDao()
+    }
+    
+    @Provides
+    fun provideXtreamCacheDao(database: KybersStreamDatabase): XtreamCacheDao {
+        return database.xtreamCacheDao()
+    }
+    
+    @Provides
+    fun provideTMDBCacheDao(database: KybersStreamDatabase): TMDBCacheDao {
+        return database.tmdbCacheDao()
     }
 }

@@ -3,6 +3,7 @@ package com.kybers.stream.di
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.kybers.stream.data.remote.api.XtreamApi
+import com.kybers.stream.data.remote.api.TMDBApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,7 +13,16 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class XtreamRetrofit
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class TMDBRetrofit
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -42,7 +52,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(
+    @XtreamRetrofit
+    fun provideXtreamRetrofit(
         okHttpClient: OkHttpClient,
         gson: Gson
     ): Retrofit {
@@ -55,7 +66,27 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideXtreamApi(retrofit: Retrofit): XtreamApi {
+    @TMDBRetrofit
+    fun provideTMDBRetrofit(
+        okHttpClient: OkHttpClient,
+        gson: Gson
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(TMDBApi.BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideXtreamApi(@XtreamRetrofit retrofit: Retrofit): XtreamApi {
         return retrofit.create(XtreamApi::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideTMDBApi(@TMDBRetrofit retrofit: Retrofit): TMDBApi {
+        return retrofit.create(TMDBApi::class.java)
     }
 }

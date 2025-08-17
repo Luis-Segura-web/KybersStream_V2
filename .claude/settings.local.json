@@ -23,7 +23,9 @@
       "Bash(gradlew.bat :app:compileDebugKotlin:*)",
       "Bash(timeout:*)",
       "Bash(.\\gradlew.bat:*)",
-      "Bash(.\\gradlew.bat:*)"
+      "Bash(.\\gradlew.bat:*)",
+      "Bash(./gradlew:*)",
+      "Bash(.gradlew.bat assembleDebug)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

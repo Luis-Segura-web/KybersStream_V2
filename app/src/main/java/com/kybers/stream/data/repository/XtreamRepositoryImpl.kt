@@ -7,9 +7,11 @@ import com.kybers.stream.domain.repository.UserRepository
 import com.kybers.stream.domain.repository.XtreamRepository
 import com.kybers.stream.data.cache.CacheManager
 import com.kybers.stream.data.cache.CacheConfigs
+import com.kybers.stream.data.cache.DatabaseCacheManager
 import com.kybers.stream.domain.usecase.network.RetryStrategyUseCase
 import kotlinx.coroutines.flow.first
 import retrofit2.Retrofit
+import com.kybers.stream.di.XtreamRetrofit
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
@@ -18,8 +20,9 @@ import javax.inject.Singleton
 @Singleton
 class XtreamRepositoryImpl @Inject constructor(
     private val userRepository: UserRepository,
-    private val retrofit: Retrofit,
+    @XtreamRetrofit private val retrofit: Retrofit,
     private val cacheManager: CacheManager,
+    private val databaseCacheManager: DatabaseCacheManager,
     private val retryStrategy: RetryStrategyUseCase
 ) : XtreamRepository {
 
@@ -28,6 +31,11 @@ class XtreamRepositoryImpl @Inject constructor(
         return if (user != null) {
             Triple(user.server, user.username, user.password)
         } else null
+    }
+    
+    private suspend fun getUserHash(): String? {
+        val (server, username, password) = getCredentials() ?: return null
+        return databaseCacheManager.generateUserHash(username, password, server)
     }
 
     private fun createApiForServer(serverUrl: String): XtreamApi {
@@ -186,6 +194,21 @@ class XtreamRepositoryImpl @Inject constructor(
             val (server, username, password) = getCredentials() 
                 ?: return XtreamResult.Error("Usuario no autenticado", XtreamErrorCode.INVALID_CREDENTIALS)
             
+            val userHash = getUserHash() 
+                ?: return XtreamResult.Error("Error generando hash de usuario", XtreamErrorCode.UNKNOWN)
+            
+            // Verificar si el cache es válido
+            if (databaseCacheManager.isXtreamCacheValid(userHash)) {
+                val cachedMovies = databaseCacheManager.getCachedXtreamMovies(userHash)
+                val filteredMovies = if (categoryId != null) {
+                    cachedMovies.filter { it.categoryId == categoryId }
+                } else {
+                    cachedMovies
+                }
+                return XtreamResult.Success(filteredMovies)
+            }
+            
+            // Si no hay cache válido, hacer llamada a la API
             val api = createApiForServer(server)
             val response = api.getVodStreams(username, password, categoryId = categoryId)
             
@@ -204,6 +227,12 @@ class XtreamRepositoryImpl @Inject constructor(
                         tmdbId = dto.tmdbId
                     )
                 } ?: emptyList()
+                
+                // Guardar en cache si es la llamada completa (sin filtro de categoría)
+                if (categoryId == null) {
+                    databaseCacheManager.cacheXtreamMovies(movies, userHash)
+                }
+                
                 XtreamResult.Success(movies)
             } else {
                 XtreamResult.Error("Error del servidor: ${response.code()}", XtreamErrorCode.SERVER_ERROR)
@@ -222,6 +251,21 @@ class XtreamRepositoryImpl @Inject constructor(
             val (server, username, password) = getCredentials() 
                 ?: return XtreamResult.Error("Usuario no autenticado", XtreamErrorCode.INVALID_CREDENTIALS)
             
+            val userHash = getUserHash() 
+                ?: return XtreamResult.Error("Error generando hash de usuario", XtreamErrorCode.UNKNOWN)
+            
+            // Verificar si el cache es válido
+            if (databaseCacheManager.isXtreamCacheValid(userHash)) {
+                val cachedSeries = databaseCacheManager.getCachedXtreamSeries(userHash)
+                val filteredSeries = if (categoryId != null) {
+                    cachedSeries.filter { it.categoryId == categoryId }
+                } else {
+                    cachedSeries
+                }
+                return XtreamResult.Success(filteredSeries)
+            }
+            
+            // Si no hay cache válido, hacer llamada a la API
             val api = createApiForServer(server)
             val response = api.getSeries(username, password, categoryId = categoryId)
             
@@ -246,6 +290,12 @@ class XtreamRepositoryImpl @Inject constructor(
                         tmdbId = dto.tmdbId
                     )
                 } ?: emptyList()
+                
+                // Guardar en cache si es la llamada completa (sin filtro de categoría)
+                if (categoryId == null) {
+                    databaseCacheManager.cacheXtreamSeries(series, userHash)
+                }
+                
                 XtreamResult.Success(series)
             } else {
                 XtreamResult.Error("Error del servidor: ${response.code()}", XtreamErrorCode.SERVER_ERROR)
