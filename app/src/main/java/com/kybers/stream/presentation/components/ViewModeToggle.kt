@@ -2,6 +2,7 @@ package com.kybers.stream.presentation.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.Icon
@@ -28,7 +29,7 @@ fun ViewModeToggle(
         modifier = modifier
     ) {
         Icon(
-            imageVector = if (currentMode == ViewMode.LIST) Icons.Default.GridView else Icons.Default.List,
+            imageVector = if (currentMode == ViewMode.LIST) Icons.Default.GridView else Icons.AutoMirrored.Filled.List,
             contentDescription = if (currentMode == ViewMode.LIST) "Cambiar a vista cuadrícula" else "Cambiar a vista lista",
             modifier = Modifier.size(24.dp)
         )

@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +43,10 @@ import com.kybers.stream.domain.model.*
 import com.kybers.stream.presentation.components.accessibility.AdaptiveText
 import com.kybers.stream.presentation.components.loading.SkeletonComponents
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -989,7 +994,8 @@ fun SearchErrorState(
 }
 
 // ViewModel placeholder y clases de datos
-class GlobalSearchViewModel : androidx.lifecycle.ViewModel() {
+@HiltViewModel
+class GlobalSearchViewModel @Inject constructor() : androidx.lifecycle.ViewModel() {
     private val _uiState = MutableStateFlow(GlobalSearchUiState())
     val uiState: StateFlow<GlobalSearchUiState> = _uiState
     

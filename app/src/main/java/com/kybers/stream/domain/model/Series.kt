@@ -16,7 +16,10 @@ data class Series(
     val backdropPath: List<String> = emptyList(),
     val youtubeTrailer: String?,
     val episodeRunTime: String?,
-    val tmdbId: String? = null
+    val tmdbId: String? = null,
+    val seasonCount: Int? = null,
+    val year: String? = null,
+    val quality: String? = null
 )
 
 data class SeriesInfo(

@@ -164,7 +164,7 @@ fun TvScreen(
 fun PlayerSection(
     viewModel: TvViewModel,
     currentMedia: com.kybers.stream.domain.model.MediaInfo?,
-    playbackState: String?, // TODO: Use proper playback state type
+    playbackState: com.kybers.stream.domain.model.PlaybackState,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -212,8 +212,15 @@ fun PlayerSection(
                         )
                         
                         if (playbackState != null) {
+                            val playbackText = when (playbackState) {
+                                is com.kybers.stream.domain.model.PlaybackState.Playing -> "Reproduciendo"
+                                is com.kybers.stream.domain.model.PlaybackState.Paused -> "Pausado"
+                                is com.kybers.stream.domain.model.PlaybackState.Buffering -> "Cargando..."
+                                is com.kybers.stream.domain.model.PlaybackState.Idle -> "Detenido"
+                                is com.kybers.stream.domain.model.PlaybackState.Error -> "Error"
+                            }
                             AdaptiveText(
-                                text = playbackState,
+                                text = playbackText,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.White.copy(alpha = 0.8f)
                             )

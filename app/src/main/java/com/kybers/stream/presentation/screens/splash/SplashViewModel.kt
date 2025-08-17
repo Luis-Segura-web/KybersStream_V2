@@ -17,7 +17,7 @@ class SplashViewModel @Inject constructor(
     private val isUserLoggedInUseCase: IsUserLoggedInUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<SplashUiState>(SplashUiState.Loading)
+    private val _uiState = MutableStateFlow<SplashUiState>(SplashUiState.Loading())
     val uiState: StateFlow<SplashUiState> = _uiState.asStateFlow()
 
     init {

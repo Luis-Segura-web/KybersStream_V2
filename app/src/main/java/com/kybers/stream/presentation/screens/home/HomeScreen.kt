@@ -7,6 +7,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.kybers.stream.domain.model.ContentType
+import com.kybers.stream.domain.model.ContentItem
 import com.kybers.stream.domain.model.FavoriteItem
 import com.kybers.stream.domain.model.PlaybackProgress
 import com.kybers.stream.presentation.screens.movies.MoviesScreen
@@ -184,6 +186,11 @@ fun HomeTabContent(
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
     
+    // Compute heroItems from the first non-empty carousel
+    val heroItems = remember(discoveryData) {
+        discoveryData.sections.firstOrNull()?.carousels?.firstOrNull { !it.isEmpty }?.items?.take(5) ?: emptyList()
+    }
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -194,7 +201,7 @@ fun HomeTabContent(
         // Hero Carousel - Banner principal
         item {
             HeroCarousel(
-                items = discoveryData.heroItems,
+                items = heroItems,
                 isLoading = discoveryData.isLoading,
                 onItemClick = { item -> viewModel.onContentItemClick(item) },
                 onPlayClick = { item -> viewModel.onContentPlayClick(item) },
@@ -229,24 +236,24 @@ fun HomeTabContent(
             
             discoveryData.hasContent -> {
                 // Continuar viendo (solo si hay progreso)
-                if (discoveryData.continueWatching.isNotEmpty()) {
+                if (uiState.continueWatching.isNotEmpty()) {
                     item {
                         ContinueWatchingSection(
-                            items = discoveryData.continueWatching,
-                            onItemClick = { item -> viewModel.onContentItemClick(item) },
-                            onPlayClick = { item -> viewModel.onContentPlayClick(item) },
+                            items = uiState.continueWatching,
+                            onItemClick = { item -> /* TODO: Handle PlaybackProgress click */ },
+                            onPlayClick = { item -> /* TODO: Handle PlaybackProgress play */ },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
                 }
                 
                 // Favoritos (solo si hay favoritos)
-                if (discoveryData.favorites.isNotEmpty()) {
+                if (uiState.favorites.isNotEmpty()) {
                     item {
                         FavoritesSection(
-                            favorites = discoveryData.favorites,
-                            onFavoriteClick = { item -> viewModel.onContentItemClick(item) },
-                            onPlayClick = { item -> viewModel.onContentPlayClick(item) },
+                            favorites = uiState.favorites,
+                            onFavoriteClick = { item -> /* TODO: Handle FavoriteItem click */ },
+                            onPlayClick = { item -> /* TODO: Handle FavoriteItem play */ },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
@@ -263,7 +270,7 @@ fun HomeTabContent(
                                 onPlayClick = { item -> viewModel.onContentPlayClick(item) },
                                 onMoreClick = { 
                                     // TODO: Navigate to full category view
-                                    viewModel.onCategoryClick(carousel.categoryId)
+                                    viewModel.onCategoryClick(carousel.id)
                                 },
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             )
@@ -297,10 +304,10 @@ fun HomeTabContent(
 
 @Composable
 fun HeroCarousel(
-    items: List<Any>, // TODO: Define proper hero item type
+    items: List<ContentItem>,
     isLoading: Boolean,
-    onItemClick: (Any) -> Unit,
-    onPlayClick: (Any) -> Unit,
+    onItemClick: (ContentItem) -> Unit,
+    onPlayClick: (ContentItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
@@ -386,7 +393,7 @@ fun HeroCarousel(
 
 @Composable
 fun HeroCarouselItem(
-    item: Any, // TODO: Define proper hero item type
+    item: ContentItem,
     onItemClick: () -> Unit,
     onPlayClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -494,9 +501,9 @@ fun HeroCarouselItem(
 @Composable
 fun ContentHorizontalSection(
     title: String,
-    items: List<Any>, // TODO: Define proper content item type
-    onItemClick: (Any) -> Unit,
-    onPlayClick: (Any) -> Unit,
+    items: List<ContentItem>,
+    onItemClick: (ContentItem) -> Unit,
+    onPlayClick: (ContentItem) -> Unit,
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -544,7 +551,7 @@ fun ContentHorizontalSection(
 
 @Composable
 fun ContentPosterCard(
-    item: Any, // TODO: Define proper content item type
+    item: ContentItem,
     onItemClick: () -> Unit,
     onPlayClick: () -> Unit,
     modifier: Modifier = Modifier

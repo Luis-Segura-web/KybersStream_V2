@@ -9,5 +9,6 @@ data class Channel(
     val isAdult: Boolean = false,
     val tvArchive: Boolean = false,
     val tvArchiveDuration: Int = 0,
-    val addedTimestamp: Long = 0L
+    val addedTimestamp: Long = 0L,
+    val categoryName: String? = null
 )

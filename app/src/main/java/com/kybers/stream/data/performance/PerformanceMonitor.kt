@@ -63,6 +63,7 @@ class PerformanceMonitor @Inject constructor(
     // Cache para optimizar cálculos
     private val metricsHistory = mutableListOf<PerformanceMetrics>()
     private var lastGcCount = 0L
+    private var lastMemoryUsage = 0L
     private var frameDropCounter = 0
     
     /**
@@ -189,10 +190,19 @@ class PerformanceMonitor @Inject constructor(
      */
     private fun getGcCount(): Long {
         return try {
-            val gcCount = Debug.getGlobalGcInvocationCount().toLong()
-            val newGcs = gcCount - lastGcCount
-            lastGcCount = gcCount
-            newGcs
+            // Using alternative method since getGlobalGcInvocationCount is deprecated
+            val memInfo = Debug.MemoryInfo()
+            Debug.getMemoryInfo(memInfo)
+            // Approximate GC count based on memory pressure changes
+            val currentMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+            val memoryDiff = kotlin.math.abs(currentMemory - lastMemoryUsage)
+            lastMemoryUsage = currentMemory
+            
+            // Simple heuristic: if memory changed significantly, likely a GC occurred
+            if (memoryDiff > 1024 * 1024) { // 1MB threshold
+                lastGcCount++
+            }
+            lastGcCount
         } catch (e: Exception) {
             0L
         }

@@ -9,6 +9,7 @@ import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.LoadControl
@@ -56,7 +57,8 @@ object PlayerModule {
     fun provideSimpleCache(@ApplicationContext context: Context): SimpleCache {
         val cacheDirectory = File(context.cacheDir, "exoplayer_cache")
         val cacheEvictor = LeastRecentlyUsedCacheEvictor(50 * 1024 * 1024) // 50MB cache
-        return SimpleCache(cacheDirectory, cacheEvictor)
+        val databaseProvider = StandaloneDatabaseProvider(context)
+        return SimpleCache(cacheDirectory, cacheEvictor, databaseProvider)
     }
 
     @Provides

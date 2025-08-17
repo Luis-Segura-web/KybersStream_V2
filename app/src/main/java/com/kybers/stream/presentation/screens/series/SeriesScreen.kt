@@ -182,7 +182,7 @@ fun SeriesScreen(
                     viewMode = viewMode,
                     onSeriesClick = onSeriesClick,
                     onFavoriteClick = { series ->
-                        viewModel.toggleFavorite(series)
+                        viewModel.toggleFavorite(series.seriesId)
                     },
                     modifier = Modifier.fillMaxSize()
                 )

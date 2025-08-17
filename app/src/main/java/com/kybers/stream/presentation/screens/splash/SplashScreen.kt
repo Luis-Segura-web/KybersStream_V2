@@ -154,7 +154,7 @@ fun SplashScreen(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    when (uiState) {
+                    when (val currentState = uiState) {
                         is SplashUiState.Loading -> {
                             LinearProgressIndicator(
                                 modifier = Modifier
@@ -168,8 +168,8 @@ fun SplashScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             val loadingText = when {
-                                uiState.isMigrating -> "Actualizando datos..."
-                                uiState.isValidatingSession -> "Validando sesión..."
+                                currentState.isMigrating -> "Actualizando datos..."
+                                currentState.isValidatingSession -> "Validando sesión..."
                                 else -> "Iniciando aplicación..."
                             }
                             
@@ -181,7 +181,7 @@ fun SplashScreen(
                             )
                             
                             // Badge de migración si aplica
-                            if (uiState.isMigrating) {
+                            if (currentState.isMigrating) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 
                                 Surface(

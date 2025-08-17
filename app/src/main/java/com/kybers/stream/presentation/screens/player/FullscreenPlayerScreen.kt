@@ -127,14 +127,14 @@ fun FullscreenPlayerScreen(
                 // Main player view
                 PlayerVideoContent(
                     viewModel = viewModel,
-                    currentMedia = currentMedia,
+                    currentMedia = currentMedia!!,
                     playbackState = playbackState
                 )
                 
                 // Overlay controls
                 PlayerOverlayControls(
                     visible = showControls,
-                    currentMedia = currentMedia,
+                    currentMedia = currentMedia!!,
                     playbackState = playbackState,
                     isTablet = isTablet,
                     isLandscape = isLandscape,

@@ -554,7 +554,7 @@ fun ProgramCell(
     isTablet: Boolean
 ) {
     Card(
-        onClick = if (program != null) onClick else { },
+        onClick = if (program != null) onClick else { -> },
         modifier = Modifier
             .width(120.dp)
             .fillMaxHeight()

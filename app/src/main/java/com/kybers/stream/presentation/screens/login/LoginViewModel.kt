@@ -153,4 +153,8 @@ class LoginViewModel @Inject constructor(
     fun resetLoginSuccess() {
         _uiState.value = _uiState.value.copy(isLoginSuccessful = false)
     }
+
+    fun onRememberUserChanged(remember: Boolean) {
+        _uiState.value = _uiState.value.copy(rememberUser = remember)
+    }
 }
