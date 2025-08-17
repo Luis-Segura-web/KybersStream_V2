@@ -6,6 +6,8 @@ import com.kybers.stream.domain.model.*
 import com.kybers.stream.domain.usecase.favorites.AddFavoriteUseCase
 import com.kybers.stream.domain.usecase.favorites.RemoveFavoriteUseCase
 import com.kybers.stream.domain.usecase.favorites.IsFavoriteUseCase
+import com.kybers.stream.domain.usecase.TMDBUseCases
+import com.kybers.stream.domain.repository.XtreamRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -14,6 +16,9 @@ import javax.inject.Inject
 data class SeriesDetailUiState(
     val isLoading: Boolean = false,
     val seriesDetail: SeriesDetail? = null,
+    val enrichedSeriesData: EnrichedSeries? = null,
+    val isLoadingTMDB: Boolean = false,
+    val tmdbError: String? = null,
     val error: String? = null
 )
 
@@ -21,7 +26,9 @@ data class SeriesDetailUiState(
 class SeriesDetailViewModel @Inject constructor(
     private val addFavoriteUseCase: AddFavoriteUseCase,
     private val removeFavoriteUseCase: RemoveFavoriteUseCase,
-    private val isFavoriteUseCase: IsFavoriteUseCase
+    private val isFavoriteUseCase: IsFavoriteUseCase,
+    private val tmdbUseCases: TMDBUseCases,
+    private val xtreamRepository: XtreamRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SeriesDetailUiState())
@@ -51,27 +58,113 @@ class SeriesDetailViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
-                // TODO: Implement actual API call to get series details
-                // For now, create a mock series detail
-                val mockSeries = createMockSeriesDetail(seriesId)
-                
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false,
-                        seriesDetail = mockSeries,
-                        error = null
-                    )
-                }
-                
-                // Set first season as selected by default
-                if (mockSeries.seasons.isNotEmpty()) {
-                    _selectedSeason.value = mockSeries.seasons.first()
+                // Obtener información básica de la serie desde Xtream
+                when (val result = xtreamRepository.getSeriesInfo(seriesId)) {
+                    is XtreamResult.Success -> {
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                seriesDetail = result.data,
+                                error = null
+                            )
+                        }
+                        
+                        // Set first season as selected by default
+                        if (result.data.seasons.isNotEmpty()) {
+                            _selectedSeason.value = result.data.seasons.first()
+                        }
+                        
+                        // Buscar datos TMDB si existe tmdb_id
+                        val tmdbId = result.data.tmdbRating // tmdbRating contiene el tmdb_id
+                        if (!tmdbId.isNullOrEmpty()) {
+                            loadTMDBData(seriesId, tmdbId)
+                        }
+                    }
+                    is XtreamResult.Error -> {
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                error = result.message
+                            )
+                        }
+                    }
+                    is XtreamResult.Loading -> {
+                        // Loading state is already handled above
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(
                         isLoading = false,
                         error = "Error al cargar detalles: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun loadTMDBData(seriesId: String, tmdbId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingTMDB = true, tmdbError = null) }
+            
+            try {
+                // Verificar cache primero, luego API si es necesario
+                val tmdbResult = tmdbUseCases.getSeriesDetails(tmdbId)
+                if (tmdbResult.isSuccess) {
+                    // Crear serie base desde datos de Xtream para el enriquecimiento
+                    val currentDetail = _uiState.value.seriesDetail
+                    if (currentDetail != null) {
+                        val baseSeries = Series(
+                            seriesId = currentDetail.seriesId,
+                            name = currentDetail.name,
+                            cover = currentDetail.poster,
+                            categoryId = "0", // Default category
+                            plot = currentDetail.plot,
+                            cast = currentDetail.cast,
+                            director = currentDetail.director,
+                            genre = currentDetail.genre,
+                            releaseDate = currentDetail.releaseDate,
+                            lastModified = System.currentTimeMillis(),
+                            rating = currentDetail.rating,
+                            rating5Based = currentDetail.rating?.toDoubleOrNull() ?: 0.0,
+                            backdropPath = emptyList(),
+                            youtubeTrailer = null,
+                            episodeRunTime = null,
+                            tmdbId = tmdbId
+                        )
+                        
+                        // Enriquecer con datos TMDB
+                        val enrichResult = tmdbUseCases.enrichSeries(baseSeries)
+                        if (enrichResult.isSuccess) {
+                            _uiState.update { 
+                                it.copy(
+                                    isLoadingTMDB = false,
+                                    enrichedSeriesData = enrichResult.getOrNull(),
+                                    tmdbError = null
+                                )
+                            }
+                        } else {
+                            _uiState.update { 
+                                it.copy(
+                                    isLoadingTMDB = false,
+                                    tmdbError = "Error enriqueciendo datos: ${enrichResult.exceptionOrNull()?.message}"
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    _uiState.update { 
+                        it.copy(
+                            isLoadingTMDB = false,
+                            tmdbError = "Error cargando datos TMDB: ${tmdbResult.exceptionOrNull()?.message}"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isLoadingTMDB = false,
+                        tmdbError = "Error inesperado cargando TMDB: ${e.message}"
                     )
                 }
             }

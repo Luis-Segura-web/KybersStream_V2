@@ -25,7 +25,8 @@
       "Bash(.\\gradlew.bat:*)",
       "Bash(.\\gradlew.bat:*)",
       "Bash(./gradlew:*)",
-      "Bash(.gradlew.bat assembleDebug)"
+      "Bash(.gradlew.bat assembleDebug)",
+      "Bash(rm:*)"
     ],
     "defaultMode": "acceptEdits",
     "additionalDirectories": [

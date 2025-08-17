@@ -43,6 +43,8 @@ import com.kybers.stream.domain.model.ContentType
 import com.kybers.stream.domain.model.ContentItem
 import com.kybers.stream.domain.model.FavoriteItem
 import com.kybers.stream.domain.model.PlaybackProgress
+import com.kybers.stream.domain.model.Movie
+import com.kybers.stream.domain.model.Series
 import com.kybers.stream.presentation.screens.movies.MoviesScreen
 import com.kybers.stream.presentation.screens.series.SeriesScreen
 import com.kybers.stream.presentation.screens.tv.TvScreen
@@ -51,7 +53,6 @@ import com.kybers.stream.presentation.components.discovery.LoadingCarousel
 import com.kybers.stream.presentation.components.discovery.ErrorCarousel
 import com.kybers.stream.presentation.components.accessibility.AdaptiveText
 import com.kybers.stream.presentation.components.loading.SkeletonComponents
-import com.kybers.stream.presentation.components.tmdb.GroupedTMDBSection
 import kotlinx.coroutines.delay
 
 enum class BottomNavItem(
@@ -260,25 +261,31 @@ fun HomeTabContent(
                     }
                 }
                 
-                // Contenido agrupado por TMDB (Películas)
-                if (uiState.groupedMovies.isNotEmpty()) {
+                // Películas recientes (solo datos Xtream)
+                if (uiState.recentMovies.isNotEmpty()) {
                     item {
-                        GroupedTMDBSection(
-                            title = "Películas Destacadas",
-                            groupedContent = uiState.groupedMovies,
-                            onGroupClick = { group -> viewModel.onGroupedContentClick(group) },
+                        RecentMoviesSection(
+                            title = "Películas Recientes",
+                            movies = uiState.recentMovies,
+                            onMovieClick = { movie -> 
+                                // TODO: Navigate to movie detail screen
+                                // navigationController.navigate("movie_detail/${movie.streamId}")
+                            },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
                 }
                 
-                // Contenido agrupado por TMDB (Series)
-                if (uiState.groupedSeries.isNotEmpty()) {
+                // Series recientes (solo datos Xtream)
+                if (uiState.recentSeries.isNotEmpty()) {
                     item {
-                        GroupedTMDBSection(
-                            title = "Series Destacadas",
-                            groupedContent = uiState.groupedSeries,
-                            onGroupClick = { group -> viewModel.onGroupedContentClick(group) },
+                        RecentSeriesSection(
+                            title = "Series Recientes",
+                            series = uiState.recentSeries,
+                            onSeriesClick = { series -> 
+                                // TODO: Navigate to series detail screen
+                                // navigationController.navigate("series_detail/${series.seriesId}")
+                            },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
@@ -994,6 +1001,325 @@ fun FavoriteCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun RecentMoviesSection(
+    title: String,
+    movies: List<Movie>,
+    onMovieClick: (Movie) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AdaptiveText(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            
+            TextButton(onClick = { /* TODO: Navigate to movies screen */ }) {
+                Text("Ver todo")
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(movies.take(10)) { movie ->
+                XtreamMovieCard(
+                    movie = movie,
+                    onClick = { onMovieClick(movie) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RecentSeriesSection(
+    title: String,
+    series: List<Series>,
+    onSeriesClick: (Series) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AdaptiveText(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            
+            TextButton(onClick = { /* TODO: Navigate to series screen */ }) {
+                Text("Ver todo")
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(series.take(10)) { serie ->
+                XtreamSeriesCard(
+                    series = serie,
+                    onClick = { onSeriesClick(serie) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun XtreamMovieCard(
+    movie: Movie,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .width(160.dp)
+            .height(240.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box {
+            // Imagen del póster (solo placeholder ya que TMDB se carga on-demand)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!movie.icon.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = movie.icon,
+                        contentDescription = movie.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Movie,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Play button overlay
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable { onClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Ver detalles",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            // Información básica
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.8f)
+                            )
+                        )
+                    )
+                    .padding(12.dp)
+            ) {
+                Column {
+                    Text(
+                        text = movie.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (!movie.rating.isNullOrEmpty()) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = Color(0xFFFFD700)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = movie.rating,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun XtreamSeriesCard(
+    series: Series,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .width(160.dp)
+            .height(240.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box {
+            // Imagen del cover
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!series.cover.isNullOrEmpty()) {
+                    AsyncImage(
+                        model = series.cover,
+                        contentDescription = series.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.VideoLibrary,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Play button overlay
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable { onClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Ver detalles",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            // Información básica
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.8f)
+                            )
+                        )
+                    )
+                    .padding(12.dp)
+            ) {
+                Column {
+                    Text(
+                        text = series.name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (!series.rating.isNullOrEmpty()) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = Color(0xFFFFD700)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = series.rating,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+                        
+                        if (!series.releaseDate.isNullOrEmpty()) {
+                            if (!series.rating.isNullOrEmpty()) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+                            Text(
+                                text = series.releaseDate.take(4),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.9f)
+                            )
+                        }
+                    }
+                }
             }
         }
     }

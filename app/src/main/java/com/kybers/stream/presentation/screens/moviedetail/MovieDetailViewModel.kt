@@ -8,6 +8,8 @@ import com.kybers.stream.domain.usecase.favorites.RemoveFavoriteUseCase
 import com.kybers.stream.domain.usecase.favorites.IsFavoriteUseCase
 import com.kybers.stream.domain.usecase.playback.GetPlaybackProgressUseCase
 import com.kybers.stream.domain.manager.PlaybackManager
+import com.kybers.stream.domain.usecase.TMDBUseCases
+import com.kybers.stream.domain.repository.XtreamRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -16,6 +18,9 @@ import javax.inject.Inject
 data class MovieDetailUiState(
     val isLoading: Boolean = false,
     val movieDetail: MovieDetail? = null,
+    val enrichedMovieData: EnrichedMovie? = null,
+    val isLoadingTMDB: Boolean = false,
+    val tmdbError: String? = null,
     val error: String? = null
 )
 
@@ -25,7 +30,9 @@ class MovieDetailViewModel @Inject constructor(
     private val removeFavoriteUseCase: RemoveFavoriteUseCase,
     private val isFavoriteUseCase: IsFavoriteUseCase,
     private val getPlaybackProgressUseCase: GetPlaybackProgressUseCase,
-    private val playbackManager: PlaybackManager
+    private val playbackManager: PlaybackManager,
+    private val tmdbUseCases: TMDBUseCases,
+    private val xtreamRepository: XtreamRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieDetailUiState())
@@ -70,22 +77,102 @@ class MovieDetailViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
-                // TODO: Implement actual API call to get movie details
-                // For now, create a mock movie detail
-                val mockMovie = createMockMovieDetail(movieId)
-                
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false,
-                        movieDetail = mockMovie,
-                        error = null
-                    )
+                // Obtener información básica de la película desde Xtream
+                when (val result = xtreamRepository.getVodInfo(movieId)) {
+                    is XtreamResult.Success -> {
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                movieDetail = result.data,
+                                error = null
+                            )
+                        }
+                        
+                        // Buscar datos TMDB si existe tmdb_id
+                        val tmdbId = result.data.tmdbRating // tmdbRating contiene el tmdb_id
+                        if (!tmdbId.isNullOrEmpty()) {
+                            loadTMDBData(movieId, tmdbId)
+                        }
+                    }
+                    is XtreamResult.Error -> {
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                error = result.message
+                            )
+                        }
+                    }
+                    is XtreamResult.Loading -> {
+                        // Loading state is already handled above
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(
                         isLoading = false,
                         error = "Error al cargar detalles: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+    
+    private fun loadTMDBData(movieId: String, tmdbId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingTMDB = true, tmdbError = null) }
+            
+            try {
+                // Verificar cache primero, luego API si es necesario
+                val tmdbResult = tmdbUseCases.getMovieDetails(tmdbId)
+                if (tmdbResult.isSuccess) {
+                        // Crear película base desde datos de Xtream para el enriquecimiento
+                        val currentDetail = _uiState.value.movieDetail
+                        if (currentDetail != null) {
+                            val baseMovie = Movie(
+                                streamId = currentDetail.streamId,
+                                name = currentDetail.name,
+                                icon = currentDetail.poster,
+                                categoryId = "0", // Default category
+                                rating = currentDetail.rating,
+                                rating5Based = currentDetail.rating?.toDoubleOrNull() ?: 0.0,
+                                addedTimestamp = System.currentTimeMillis(),
+                                isAdult = false,
+                                containerExtension = null,
+                                tmdbId = tmdbId
+                            )
+                            
+                            // Enriquecer con datos TMDB
+                            val enrichResult = tmdbUseCases.enrichMovie(baseMovie)
+                            if (enrichResult.isSuccess) {
+                                _uiState.update { 
+                                    it.copy(
+                                        isLoadingTMDB = false,
+                                        enrichedMovieData = enrichResult.getOrNull(),
+                                        tmdbError = null
+                                    )
+                                }
+                            } else {
+                                _uiState.update { 
+                                    it.copy(
+                                        isLoadingTMDB = false,
+                                        tmdbError = "Error enriqueciendo datos: ${enrichResult.exceptionOrNull()?.message}"
+                                    )
+                                }
+                            }
+                        }
+                } else {
+                    _uiState.update { 
+                        it.copy(
+                            isLoadingTMDB = false,
+                            tmdbError = "Error cargando datos TMDB: ${tmdbResult.exceptionOrNull()?.message}"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isLoadingTMDB = false,
+                        tmdbError = "Error inesperado cargando TMDB: ${e.message}"
                     )
                 }
             }
