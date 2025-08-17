@@ -76,6 +76,8 @@ fun EPGTimelineScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .background(MaterialTheme.colorScheme.background)
             .semantics { contentDescription = "Guía de programación electrónica con grid temporal" }
     ) {

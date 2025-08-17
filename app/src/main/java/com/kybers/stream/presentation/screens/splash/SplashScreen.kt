@@ -69,6 +69,8 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .background(MaterialTheme.colorScheme.surface)
             .semantics { contentDescription = "Pantalla de inicio de KybersStream" },
         contentAlignment = Alignment.Center

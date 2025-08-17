@@ -111,7 +111,8 @@ fun HomeScreen(
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                    ),
+                    windowInsets = TopAppBarDefaults.windowInsets
                 )
             }
         },
@@ -121,7 +122,8 @@ fun HomeScreen(
                     contentDescription = "Navegación principal de la aplicación" 
                 },
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                contentColor = MaterialTheme.colorScheme.onSurface
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                windowInsets = NavigationBarDefaults.windowInsets
             ) {
                 BottomNavItem.values().forEach { item ->
                     NavigationBarItem(
@@ -155,7 +157,8 @@ fun HomeScreen(
                     )
                 }
             }
-        }
+        },
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets
     ) { paddingValues ->
         Box(
             modifier = Modifier

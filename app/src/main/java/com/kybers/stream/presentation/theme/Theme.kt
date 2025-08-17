@@ -59,8 +59,10 @@ fun KybersStreamTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // Hacer la status bar transparente para edge-to-edge
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            // Hacer que los iconos de la status bar sean visibles dependiendo del tema
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

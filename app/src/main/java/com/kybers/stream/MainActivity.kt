@@ -5,8 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import com.kybers.stream.presentation.navigation.KybersStreamNavigation
 import com.kybers.stream.presentation.theme.KybersStreamTheme
@@ -19,11 +17,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             KybersStreamTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    KybersStreamNavigation(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                KybersStreamNavigation(
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }

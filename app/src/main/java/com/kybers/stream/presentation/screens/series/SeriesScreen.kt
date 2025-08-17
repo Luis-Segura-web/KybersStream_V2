@@ -70,6 +70,7 @@ fun SeriesScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .consumeWindowInsets(PaddingValues(bottom = 0.dp)) // Consume solo los insets que el padre ya maneja
             .semantics { contentDescription = "Pantalla de series con filtros avanzados y gestión de temporadas" }
     ) {
         // Header con título y controles

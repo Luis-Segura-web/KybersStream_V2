@@ -74,6 +74,8 @@ fun GlobalSearchScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .background(MaterialTheme.colorScheme.background)
             .semantics { contentDescription = "Búsqueda global con resultados tabulados" }
     ) {

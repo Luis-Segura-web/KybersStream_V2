@@ -43,12 +43,18 @@ fun SeriesDetailScreen(
         viewModel.loadSeriesDetail(seriesId)
     }
 
-    when {
-        uiState.isLoading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                 CircularProgressIndicator()
             }
         }
@@ -92,6 +98,7 @@ fun SeriesDetailScreen(
                 onToggleFavorite = { viewModel.toggleFavorite() },
                 onNavigateBack = onNavigateBack
             )
+        }
         }
     }
 }

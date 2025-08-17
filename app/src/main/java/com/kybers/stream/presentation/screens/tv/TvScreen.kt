@@ -64,6 +64,7 @@ fun TvScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .consumeWindowInsets(PaddingValues(bottom = 0.dp)) // Consume solo los insets que el padre ya maneja
             .semantics { contentDescription = "Pantalla de TV en vivo con reproductor y lista de canales" }
     ) {
         // Reproductor en la parte superior con ratio 16:9

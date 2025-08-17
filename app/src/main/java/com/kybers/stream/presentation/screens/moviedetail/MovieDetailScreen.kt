@@ -67,6 +67,8 @@ fun MovieDetailScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .semantics { contentDescription = "Pantalla de detalle de película con reproductor integrado" }
     ) {
         when {

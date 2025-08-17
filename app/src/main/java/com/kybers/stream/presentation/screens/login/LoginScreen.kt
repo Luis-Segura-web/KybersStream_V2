@@ -81,6 +81,8 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(

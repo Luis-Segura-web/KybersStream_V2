@@ -99,6 +99,7 @@ fun FullscreenPlayerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .systemBarsPadding() // Para modo fullscreen respetando gestos del sistema
             .background(Color.Black)
             .semantics { contentDescription = "Reproductor a pantalla completa con controles adaptativos" }
             .clickable(

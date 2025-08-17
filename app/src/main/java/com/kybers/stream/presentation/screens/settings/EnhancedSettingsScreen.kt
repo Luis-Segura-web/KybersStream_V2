@@ -60,6 +60,8 @@ fun EnhancedSettingsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .background(MaterialTheme.colorScheme.background)
             .semantics { contentDescription = "Pantalla de configuración con secciones organizadas" }
     ) {
