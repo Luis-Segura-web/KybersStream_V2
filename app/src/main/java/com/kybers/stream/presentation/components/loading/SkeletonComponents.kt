@@ -453,3 +453,30 @@ fun SkeletonTvScreen(
         )
     }
 }
+
+// Objeto con métodos estáticos para compatibilidad
+object SkeletonComponents {
+    @Composable
+    fun SkeletonBox(
+        modifier: Modifier = Modifier
+    ) {
+        val transition = rememberInfiniteTransition(label = "skeleton")
+        val alpha by transition.animateFloat(
+            initialValue = 0.2f,
+            targetValue = 0.8f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1000),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "alpha"
+        )
+        
+        Box(
+            modifier = modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alpha)
+                )
+        )
+    }
+}

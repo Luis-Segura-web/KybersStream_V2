@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -11,19 +12,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -38,6 +42,8 @@ import com.kybers.stream.presentation.components.ViewModeToggle
 import com.kybers.stream.presentation.components.epg.EpgNowNextDisplay
 import com.kybers.stream.presentation.components.epg.EpgLoadingPlaceholder
 import com.kybers.stream.presentation.components.epg.EpgErrorDisplay
+import com.kybers.stream.presentation.components.accessibility.AdaptiveText
+import com.kybers.stream.presentation.components.loading.SkeletonComponents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +53,8 @@ fun TvScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val playbackState by viewModel.playbackState.collectAsStateWithLifecycle()
     val currentMedia by viewModel.currentMedia.collectAsStateWithLifecycle()
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
     
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("") }
@@ -56,17 +64,20 @@ fun TvScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .semantics { contentDescription = "Pantalla de TV en vivo con reproductor y lista de canales" }
     ) {
-        // Reproductor en la parte superior
+        // Reproductor en la parte superior con ratio 16:9
         PlayerSection(
             viewModel = viewModel,
             currentMedia = currentMedia,
+            playbackState = playbackState,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(if (isTablet) 250.dp else 200.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        // Barra de búsqueda y categorías
+        // Barra de búsqueda y filtros
         SearchAndFilterSection(
             searchQuery = searchQuery,
             onSearchQueryChange = { searchQuery = it },
@@ -85,23 +96,46 @@ fun TvScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         )
+
+        // Chips de categorías rápidas
+        if (uiState.categories.isNotEmpty()) {
+            CategoryChipsSection(
+                categories = uiState.categories,
+                selectedCategory = selectedCategory,
+                onCategorySelected = { category ->
+                    selectedCategory = category
+                    viewModel.selectCategory(category)
+                },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
 
         // Lista de canales
         when {
             uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                ChannelsLoadingState(
+                    viewMode = uiState.viewMode,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
             uiState.error != null -> {
-                ErrorMessage(
+                ChannelsErrorState(
                     error = uiState.error!!,
                     onRetry = { viewModel.loadChannels() },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            uiState.filteredChannels.isEmpty() -> {
+                ChannelsEmptyState(
+                    searchQuery = searchQuery,
+                    selectedCategory = selectedCategory,
+                    onClearFilters = {
+                        searchQuery = ""
+                        selectedCategory = ""
+                        viewModel.clearFilters()
+                    },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -111,6 +145,7 @@ fun TvScreen(
                     channelsEpg = uiState.channelsEpg,
                     viewMode = uiState.viewMode,
                     isLoadingEpg = uiState.isLoadingEpg,
+                    currentPlayingId = currentMedia?.id,
                     onChannelClick = { channel ->
                         viewModel.playChannel(channel)
                     },
@@ -129,38 +164,377 @@ fun TvScreen(
 fun PlayerSection(
     viewModel: TvViewModel,
     currentMedia: com.kybers.stream.domain.model.MediaInfo?,
+    playbackState: String?, // TODO: Use proper playback state type
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     
-    Box(
-        modifier = modifier
-            .background(Color.Black)
-            .clip(RoundedCornerShape(8.dp))
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Black)
     ) {
-        if (currentMedia != null) {
-            // Reproductor Media3
-            AndroidView(
-                factory = { ctx ->
-                    PlayerView(ctx).apply {
-                        player = viewModel.getExoPlayer()
-                        useController = true
-                        controllerShowTimeoutMs = 3000
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            // Placeholder cuando no hay reproducción
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Selecciona un canal para reproducir",
-                    color = Color.White,
-                    style = MaterialTheme.typography.bodyLarge
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (currentMedia != null) {
+                // Reproductor Media3
+                AndroidView(
+                    factory = { ctx ->
+                        PlayerView(ctx).apply {
+                            player = viewModel.getExoPlayer()
+                            useController = true
+                            controllerShowTimeoutMs = 3000
+                            setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
                 )
+                
+                // Información del canal superpuesta
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(16.dp)
+                        .background(
+                            Color.Black.copy(alpha = 0.7f),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(12.dp)
+                ) {
+                    Column {
+                        AdaptiveText(
+                            text = currentMedia.title ?: "Canal en vivo",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        if (playbackState != null) {
+                            AdaptiveText(
+                                text = playbackState,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            } else {
+                // Placeholder elegante cuando no hay reproducción
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Black.copy(alpha = 0.8f),
+                                    Color.Black.copy(alpha = 0.9f)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Tv,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = Color.White.copy(alpha = 0.7f)
+                        )
+                        
+                        AdaptiveText(
+                            text = "Selecciona un canal para reproducir",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        AdaptiveText(
+                            text = "Explora la lista de canales disponibles",
+                            color = Color.White.copy(alpha = 0.8f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryChipsSection(
+    categories: List<com.kybers.stream.domain.model.Category>,
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 4.dp)
+    ) {
+        item {
+            FilterChip(
+                onClick = { onCategorySelected("") },
+                label = { Text("Todos") },
+                selected = selectedCategory.isEmpty(),
+                leadingIcon = if (selectedCategory.isEmpty()) {
+                    {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else null
+            )
+        }
+        
+        items(categories.take(8)) { category -> // Mostrar máximo 8 categorías
+            FilterChip(
+                onClick = { onCategorySelected(category.categoryName) },
+                label = { Text(category.categoryName) },
+                selected = selectedCategory == category.categoryName,
+                leadingIcon = if (selectedCategory == category.categoryName) {
+                    {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                } else null
+            )
+        }
+    }
+}
+
+@Composable
+fun ChannelsLoadingState(
+    viewMode: ViewMode,
+    modifier: Modifier = Modifier
+) {
+    when (viewMode) {
+        ViewMode.LIST -> {
+            LazyColumn(
+                modifier = modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(6) {
+                    ChannelItemSkeleton()
+                }
+            }
+        }
+        ViewMode.GRID -> {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 160.dp),
+                modifier = modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(12) {
+                    ChannelGridItemSkeleton()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChannelItemSkeleton() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SkeletonComponents.SkeletonBox(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                SkeletonComponents.SkeletonBox(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(20.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                SkeletonComponents.SkeletonBox(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .height(16.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                SkeletonComponents.SkeletonBox(
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .height(16.dp)
+                )
+            }
+            
+            SkeletonComponents.SkeletonBox(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChannelGridItemSkeleton() {
+    Card(
+        modifier = Modifier
+            .width(160.dp)
+            .height(180.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column {
+            SkeletonComponents.SkeletonBox(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+            )
+            
+            Column(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                SkeletonComponents.SkeletonBox(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(16.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                SkeletonComponents.SkeletonBox(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .height(12.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ChannelsErrorState(
+    error: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.ErrorOutline,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.error
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        AdaptiveText(
+            text = "Error al cargar canales",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        AdaptiveText(
+            text = error,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 32.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Button(onClick = onRetry) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Reintentar")
+        }
+    }
+}
+
+@Composable
+fun ChannelsEmptyState(
+    searchQuery: String,
+    selectedCategory: String,
+    onClearFilters: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.SearchOff,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        AdaptiveText(
+            text = if (searchQuery.isNotEmpty() || selectedCategory.isNotEmpty()) {
+                "No se encontraron canales"
+            } else {
+                "No hay canales disponibles"
+            },
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        AdaptiveText(
+            text = if (searchQuery.isNotEmpty() || selectedCategory.isNotEmpty()) {
+                "Intenta con otros términos de búsqueda o categorías"
+            } else {
+                "Verifica tu conexión o contacta con tu proveedor de IPTV"
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+        
+        if (searchQuery.isNotEmpty() || selectedCategory.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Button(onClick = onClearFilters) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Limpiar filtros")
             }
         }
     }
@@ -251,6 +625,7 @@ fun ChannelsList(
     channelsEpg: Map<String, com.kybers.stream.domain.model.ChannelEpg>,
     viewMode: ViewMode,
     isLoadingEpg: Boolean,
+    currentPlayingId: String? = null,
     onChannelClick: (Channel) -> Unit,
     onFavoriteClick: (Channel) -> Unit,
     onRefreshEpg: () -> Unit,
@@ -271,6 +646,7 @@ fun ChannelsList(
                         channel = channel,
                         channelEpg = channelsEpg[channel.streamId],
                         isLoadingEpg = isLoadingEpg,
+                        isCurrentlyPlaying = currentPlayingId == channel.streamId,
                         onClick = { onChannelClick(channel) },
                         onFavoriteClick = { onFavoriteClick(channel) },
                         onRefreshEpg = onRefreshEpg
@@ -295,6 +671,7 @@ fun ChannelsList(
                         channel = channel,
                         channelEpg = channelsEpg[channel.streamId],
                         isLoadingEpg = isLoadingEpg,
+                        isCurrentlyPlaying = currentPlayingId == channel.streamId,
                         onClick = { onChannelClick(channel) },
                         onFavoriteClick = { onFavoriteClick(channel) }
                     )
@@ -309,6 +686,7 @@ fun ChannelItem(
     channel: Channel,
     channelEpg: com.kybers.stream.domain.model.ChannelEpg?,
     isLoadingEpg: Boolean,
+    isCurrentlyPlaying: Boolean = false,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onRefreshEpg: () -> Unit,
@@ -390,6 +768,7 @@ fun ChannelGridItem(
     channel: Channel,
     channelEpg: com.kybers.stream.domain.model.ChannelEpg?,
     isLoadingEpg: Boolean,
+    isCurrentlyPlaying: Boolean = false,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier

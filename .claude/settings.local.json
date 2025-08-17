@@ -19,8 +19,13 @@
       "WebFetch(domain:gzytv.vip)",
       "Bash(.\\gradlew.bat compileDebugKotlin:*)",
       "Bash(.gradlew.bat compileDebugKotlin)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(gradlew.bat :app:compileDebugKotlin:*)",
+      "Bash(timeout:*)"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "C:\\mnt\\c\\GitHub"
+    ]
   }
 }

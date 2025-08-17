@@ -1,26 +1,38 @@
 package com.kybers.stream.presentation.screens.home
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Tv
-import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,6 +47,9 @@ import com.kybers.stream.presentation.screens.tv.TvScreen
 import com.kybers.stream.presentation.components.discovery.ContentCarouselSection
 import com.kybers.stream.presentation.components.discovery.LoadingCarousel
 import com.kybers.stream.presentation.components.discovery.ErrorCarousel
+import com.kybers.stream.presentation.components.accessibility.AdaptiveText
+import com.kybers.stream.presentation.components.loading.SkeletonComponents
+import kotlinx.coroutines.delay
 
 enum class BottomNavItem(
     val title: String,
@@ -44,24 +59,90 @@ enum class BottomNavItem(
     HOME("Inicio", Icons.Default.Home, "home"),
     TV("TV", Icons.Default.Tv, "tv"),
     MOVIES("Películas", Icons.Default.Movie, "movies"),
-    SERIES("Series", Icons.Default.VideoLibrary, "series")
+    SERIES("Series", Icons.Default.VideoLibrary, "series"),
+    SETTINGS("Ajustes", Icons.Default.Settings, "settings")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    onNavigateToSearch: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(BottomNavItem.HOME) }
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
 
     Scaffold(
+        topBar = {
+            if (selectedTab == BottomNavItem.HOME) {
+                TopAppBar(
+                    title = {
+                        AdaptiveText(
+                            text = "KybersStream",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    actions = {
+                        IconButton(onClick = onNavigateToSearch) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = "Buscar contenido"
+                            )
+                        }
+                        IconButton(onClick = onNavigateToSettings) {
+                            Icon(
+                                Icons.Default.Settings,
+                                contentDescription = "Configuración"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            }
+        },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                modifier = Modifier.semantics { 
+                    contentDescription = "Navegación principal de la aplicación" 
+                },
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
                 BottomNavItem.values().forEach { item ->
                     NavigationBarItem(
-                        icon = { Icon(item.icon, contentDescription = item.title) },
-                        label = { Text(item.title) },
+                        icon = { 
+                            Icon(
+                                item.icon, 
+                                contentDescription = null,
+                                modifier = Modifier.size(if (isTablet) 28.dp else 24.dp)
+                            ) 
+                        },
+                        label = { 
+                            AdaptiveText(
+                                text = item.title,
+                                style = MaterialTheme.typography.labelMedium
+                            ) 
+                        },
                         selected = selectedTab == item,
-                        onClick = { selectedTab = item }
+                        onClick = { 
+                            selectedTab = item
+                            if (item == BottomNavItem.SETTINGS) {
+                                onNavigateToSettings()
+                            }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
             }
@@ -85,6 +166,9 @@ fun HomeScreen(
                 BottomNavItem.SERIES -> {
                     SeriesScreen()
                 }
+                BottomNavItem.SETTINGS -> {
+                    // El settings se navega externamente
+                }
             }
         }
     }
@@ -97,42 +181,36 @@ fun HomeTabContent(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val discoveryData by viewModel.discoveryData.collectAsStateWithLifecycle()
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
     
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .semantics { contentDescription = "Pantalla principal con contenido recomendado" },
+        verticalArrangement = Arrangement.spacedBy(if (isTablet) 32.dp else 24.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
+        // Hero Carousel - Banner principal
         item {
-            // Header con título y botón de actualizar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Inicio",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                IconButton(onClick = { viewModel.refreshDiscovery() }) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
-                }
-            }
+            HeroCarousel(
+                items = discoveryData.heroItems,
+                isLoading = discoveryData.isLoading,
+                onItemClick = { item -> viewModel.onContentItemClick(item) },
+                onPlayClick = { item -> viewModel.onContentPlayClick(item) },
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
         }
         
-        // Mostrar carruseles de descubrimiento
+        // Secciones dinámicas
         when {
             discoveryData.isLoading -> {
                 items(3) { index ->
-                    LoadingCarousel(
+                    SkeletonContentSection(
                         title = when (index) {
                             0 -> "Continuar viendo"
                             1 -> "Recomendado para ti"
-                            else -> "Recientes"
+                            else -> "Agregados recientemente"
                         }
                     )
                 }
@@ -140,29 +218,54 @@ fun HomeTabContent(
             
             discoveryData.error != null -> {
                 item {
-                    ErrorCarousel(
+                    ErrorStateCard(
                         title = "Error al cargar contenido",
-                        error = discoveryData.error!!,
-                        onRetry = { viewModel.refreshDiscovery() }
+                        message = discoveryData.error!!,
+                        onRetry = { viewModel.refreshDiscovery() },
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
             }
             
             discoveryData.hasContent -> {
+                // Continuar viendo (solo si hay progreso)
+                if (discoveryData.continueWatching.isNotEmpty()) {
+                    item {
+                        ContinueWatchingSection(
+                            items = discoveryData.continueWatching,
+                            onItemClick = { item -> viewModel.onContentItemClick(item) },
+                            onPlayClick = { item -> viewModel.onContentPlayClick(item) },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+                
+                // Favoritos (solo si hay favoritos)
+                if (discoveryData.favorites.isNotEmpty()) {
+                    item {
+                        FavoritesSection(
+                            favorites = discoveryData.favorites,
+                            onFavoriteClick = { item -> viewModel.onContentItemClick(item) },
+                            onPlayClick = { item -> viewModel.onContentPlayClick(item) },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+                
+                // Carruseles de contenido por categoría
                 discoveryData.sections.forEach { section ->
                     section.carousels.forEach { carousel ->
                         item(key = carousel.id) {
-                            ContentCarouselSection(
-                                carousel = carousel,
-                                onItemClick = { item ->
-                                    viewModel.onContentItemClick(item)
-                                },
-                                onPlayClick = { item ->
-                                    viewModel.onContentPlayClick(item)
-                                },
-                                onMoreClick = {
+                            ContentHorizontalSection(
+                                title = carousel.title,
+                                items = carousel.items,
+                                onItemClick = { item -> viewModel.onContentItemClick(item) },
+                                onPlayClick = { item -> viewModel.onContentPlayClick(item) },
+                                onMoreClick = { 
                                     // TODO: Navigate to full category view
-                                }
+                                    viewModel.onCategoryClick(carousel.categoryId)
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
                     }
@@ -171,46 +274,494 @@ fun HomeTabContent(
             
             else -> {
                 item {
-                    // Estado vacío
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.VideoLibrary,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        
-                        Text(
-                            text = "No hay contenido disponible",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(top = 16.dp)
-                        )
-                        
-                        Text(
-                            text = "Agrega contenido a favoritos o comienza a ver algo para ver recomendaciones",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
+                    EmptyStateCard(
+                        title = "Bienvenido a KybersStream",
+                        message = "Comienza explorando el contenido disponible en TV, Películas y Series",
+                        icon = Icons.Default.VideoLibrary,
+                        actionText = "Explorar contenido",
+                        onActionClick = { /* TODO: Navigate to first tab with content */ },
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                 }
             }
         }
         
-        // Botón de cerrar sesión al final
+        // Información adicional al final
         item {
-            Button(
-                onClick = onNavigateToLogin,
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+// Nuevos componentes para HomeScreen moderna
+
+@Composable
+fun HeroCarousel(
+    items: List<Any>, // TODO: Define proper hero item type
+    isLoading: Boolean,
+    onItemClick: (Any) -> Unit,
+    onPlayClick: (Any) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val configuration = LocalConfiguration.current
+    val isTablet = configuration.screenWidthDp >= 600
+    val heroHeight = if (isTablet) 280.dp else 200.dp
+    
+    if (isLoading) {
+        // Skeleton del hero carousel
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(heroHeight)
+                .padding(horizontal = 16.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            SkeletonComponents.SkeletonBox(
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        return
+    }
+    
+    if (items.isEmpty()) return
+    
+    val pagerState = rememberPagerState(pageCount = { items.size.coerceAtMost(5) })
+    
+    // Auto-scroll para el hero carousel
+    LaunchedEffect(pagerState) {
+        while (true) {
+            delay(5000) // Cambiar cada 5 segundos
+            val nextPage = (pagerState.currentPage + 1) % pagerState.pageCount
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
+    
+    Column(
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(heroHeight)
+        ) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                HeroCarouselItem(
+                    item = items[page],
+                    onItemClick = { onItemClick(items[page]) },
+                    onPlayClick = { onPlayClick(items[page]) },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+            
+            // Indicadores de página
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Cerrar Sesión")
+                repeat(pagerState.pageCount) { index ->
+                    Box(
+                        modifier = Modifier
+                            .size(if (index == pagerState.currentPage) 12.dp else 8.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (index == pagerState.currentPage) 
+                                    MaterialTheme.colorScheme.primary
+                                else 
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HeroCarouselItem(
+    item: Any, // TODO: Define proper hero item type
+    onItemClick: () -> Unit,
+    onPlayClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onItemClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Box {
+            // Imagen de fondo (placeholder)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f)
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Movie,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = Color.White.copy(alpha = 0.8f)
+                )
+            }
+            
+            // Overlay con gradiente
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.7f)
+                            ),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
+            )
+            
+            // Contenido superpuesto
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                AdaptiveText(
+                    text = "Contenido Destacado", // TODO: Get from item
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2
+                )
+                
+                AdaptiveText(
+                    text = "Disfruta del mejor contenido de entretenimiento", // TODO: Get from item
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.9f),
+                    maxLines = 3
+                )
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = onPlayClick,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Ver ahora")
+                    }
+                    
+                    OutlinedButton(
+                        onClick = onItemClick,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color.White
+                        ),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.8f))
+                    ) {
+                        Text("Más info")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ContentHorizontalSection(
+    title: String,
+    items: List<Any>, // TODO: Define proper content item type
+    onItemClick: (Any) -> Unit,
+    onPlayClick: (Any) -> Unit,
+    onMoreClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AdaptiveText(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            
+            TextButton(onClick = onMoreClick) {
+                Text("Ver todo")
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(items.take(10)) { item -> // Limitar a 10 items por sección
+                ContentPosterCard(
+                    item = item,
+                    onItemClick = { onItemClick(item) },
+                    onPlayClick = { onPlayClick(item) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ContentPosterCard(
+    item: Any, // TODO: Define proper content item type
+    onItemClick: () -> Unit,
+    onPlayClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onItemClick,
+        modifier = modifier
+            .width(160.dp)
+            .height(240.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box {
+            // Poster placeholder
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Movie,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Play button overlay
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable { onPlayClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Reproducir",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            // Título en la parte inferior
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.8f)
+                            )
+                        )
+                    )
+                    .padding(12.dp)
+            ) {
+                AdaptiveText(
+                    text = "Título del Contenido", // TODO: Get from item
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White,
+                    maxLines = 2,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SkeletonContentSection(
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(horizontal = 16.dp)
+    ) {
+        // Título skeleton
+        SkeletonComponents.SkeletonBox(
+            modifier = Modifier
+                .width(200.dp)
+                .height(24.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // Cards skeleton
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(5) {
+                SkeletonComponents.SkeletonBox(
+                    modifier = Modifier
+                        .width(160.dp)
+                        .height(240.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ErrorStateCard(
+    title: String,
+    message: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.Error,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.onErrorContainer
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            AdaptiveText(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            AdaptiveText(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Reintentar")
+            }
+        }
+    }
+}
+
+@Composable
+fun EmptyStateCard(
+    title: String,
+    message: String,
+    icon: ImageVector,
+    actionText: String,
+    onActionClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            AdaptiveText(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            AdaptiveText(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Button(onClick = onActionClick) {
+                Text(actionText)
             }
         }
     }
@@ -220,6 +771,7 @@ fun HomeTabContent(
 fun ContinueWatchingSection(
     items: List<PlaybackProgress>,
     onItemClick: (PlaybackProgress) -> Unit,
+    onPlayClick: (PlaybackProgress) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -324,6 +876,7 @@ fun ContinueWatchingCard(
 fun FavoritesSection(
     favorites: List<FavoriteItem>,
     onFavoriteClick: (FavoriteItem) -> Unit,
+    onPlayClick: (FavoriteItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
