@@ -126,4 +126,9 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    fun onCategoryClick(categoryId: String) {
+        // TODO: Navigate to category view
+        // navigationController.navigate("category/$categoryId")
+    }
 }
