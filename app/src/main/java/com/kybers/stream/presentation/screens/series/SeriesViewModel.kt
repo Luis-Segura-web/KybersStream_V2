@@ -64,7 +64,7 @@ class SeriesViewModel @Inject constructor(
                         _uiState.update { it.copy(error = result.message) }
                     }
                     is XtreamResult.Loading -> {
-                        // Mantener estado de carga si es necesario
+                        _uiState.update { it.copy(isLoading = true, error = null) }
                     }
                 }
             }
@@ -79,12 +79,12 @@ class SeriesViewModel @Inject constructor(
                 when (result) {
                     is XtreamResult.Success -> {
                         allSeries = result.data
-                        _uiState.update { 
-                            it.copy(
+                        _uiState.update { currentState ->
+                            currentState.copy(
                                 isLoading = false,
                                 series = result.data,
                                 allSeries = result.data,
-                                filteredSeries = applyFilters(result.data, it.selectedCategory, it.searchQuery),
+                                filteredSeries = applyFilters(result.data, currentState.selectedCategory, currentState.searchQuery),
                                 error = null
                             )
                         }

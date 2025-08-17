@@ -1,8 +1,11 @@
 package com.kybers.stream.domain.usecase
 
+import com.kybers.stream.data.cache.DatabaseCacheManager
 import com.kybers.stream.domain.model.*
+import com.kybers.stream.domain.repository.UserRepository
 import com.kybers.stream.domain.repository.XtreamRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -52,11 +55,39 @@ class GetVodStreamsUseCase @Inject constructor(
 }
 
 class GetSeriesUseCase @Inject constructor(
-    private val xtreamRepository: XtreamRepository
+    private val xtreamRepository: XtreamRepository,
+    private val databaseCacheManager: DatabaseCacheManager,
+    private val userRepository: UserRepository
 ) {
     suspend operator fun invoke(categoryId: String? = null): Flow<XtreamResult<List<Series>>> = flow {
         emit(XtreamResult.Loading)
-        emit(xtreamRepository.getSeries(categoryId))
+        
+        try {
+            val user = userRepository.getCurrentUser().first()
+            if (user == null) {
+                emit(XtreamResult.Error("Usuario no autenticado", XtreamErrorCode.INVALID_CREDENTIALS))
+                return@flow
+            }
+            
+            val userHash = databaseCacheManager.generateUserHash(user.username, user.password, user.server)
+            
+            // Intentar obtener del cache primero
+            val cachedSeries = databaseCacheManager.getCachedXtreamSeries(userHash)
+            if (cachedSeries.isNotEmpty()) {
+                emit(XtreamResult.Success(cachedSeries))
+                return@flow
+            }
+            
+            // Si no hay cache, obtener del repositorio
+            val result = xtreamRepository.getSeries(categoryId)
+            if (result is XtreamResult.Success) {
+                // Cache the data
+                databaseCacheManager.cacheXtreamSeries(result.data, userHash)
+            }
+            emit(result)
+        } catch (e: Exception) {
+            emit(XtreamResult.Error("Error inesperado: ${e.message}", XtreamErrorCode.UNKNOWN))
+        }
     }
 }
 
