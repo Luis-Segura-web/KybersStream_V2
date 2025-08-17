@@ -25,7 +25,7 @@ import javax.inject.Singleton
 
 @Singleton
 class PlaybackManagerImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val exoPlayerInstance: ExoPlayer,
     private val dataSourceFactory: DataSource.Factory,
     private val savePlaybackProgressUseCase: SavePlaybackProgressUseCase

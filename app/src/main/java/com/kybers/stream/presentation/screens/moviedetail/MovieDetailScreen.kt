@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -88,7 +89,13 @@ fun MovieDetailScreen(
                 MovieDetailContent(
                     movie = uiState.movieDetail!!,
                     playbackProgress = playbackProgress,
-                    playbackState = playbackState,
+                    playbackState = when (playbackState) {
+                        is com.kybers.stream.domain.model.PlaybackState.Playing -> "Playing"
+                        is com.kybers.stream.domain.model.PlaybackState.Paused -> "Paused"
+                        is com.kybers.stream.domain.model.PlaybackState.Buffering -> "Buffering"
+                        is com.kybers.stream.domain.model.PlaybackState.Idle -> "Idle"
+                        is com.kybers.stream.domain.model.PlaybackState.Error -> "Error"
+                    },
                     currentMedia = currentMedia,
                     isFavorite = isFavorite,
                     isTablet = isTablet,
@@ -132,7 +139,7 @@ fun MovieDetailLoadingState(
                     )
             ) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Volver",
                     tint = Color.White
                 )
@@ -212,7 +219,7 @@ fun MovieDetailErrorState(
                 )
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Volver"
             )
         }
@@ -365,7 +372,7 @@ fun MovieDetailContent(
                             )
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
                             tint = Color.White
                         )
@@ -781,7 +788,7 @@ fun MoviePlayerSection(
             AndroidView(
                 factory = { ctx ->
                     PlayerView(ctx).apply {
-                        player = viewModel.getExoPlayer()
+                        player = viewModel.getPlaybackManager().exoPlayer
                         useController = true
                         controllerShowTimeoutMs = 3000
                         setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)

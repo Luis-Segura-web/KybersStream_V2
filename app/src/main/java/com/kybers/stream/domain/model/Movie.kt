@@ -10,7 +10,12 @@ data class Movie(
     val addedTimestamp: Long = 0L,
     val isAdult: Boolean = false,
     val containerExtension: String?,
-    val tmdbId: String? = null
+    val tmdbId: String? = null,
+    val poster: String? = null,
+    val year: String? = null,
+    val genre: String? = null,
+    val plot: String? = null,
+    val quality: String? = null
 )
 
 data class MovieInfo(

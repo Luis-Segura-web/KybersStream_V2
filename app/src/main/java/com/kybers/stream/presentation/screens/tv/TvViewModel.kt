@@ -273,6 +273,16 @@ class TvViewModel @Inject constructor(
         }
     }
 
+    fun clearFilters() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedCategory = "",
+                searchQuery = "",
+                filteredChannels = allChannels
+            )
+        }
+    }
+
     fun stopPlayback() {
         playbackManager.stop()
     }

@@ -47,7 +47,7 @@ abstract class KybersStreamDatabase : RoomDatabase() {
                 KybersStreamDatabase::class.java,
                 DATABASE_NAME
             )
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration(true)
                 .build()
         }
     }

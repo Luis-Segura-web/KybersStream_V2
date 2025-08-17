@@ -7,6 +7,7 @@ import com.kybers.stream.domain.usecase.favorites.AddFavoriteUseCase
 import com.kybers.stream.domain.usecase.favorites.RemoveFavoriteUseCase
 import com.kybers.stream.domain.usecase.favorites.IsFavoriteUseCase
 import com.kybers.stream.domain.usecase.playback.GetPlaybackProgressUseCase
+import com.kybers.stream.domain.manager.PlaybackManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -23,7 +24,8 @@ class MovieDetailViewModel @Inject constructor(
     private val addFavoriteUseCase: AddFavoriteUseCase,
     private val removeFavoriteUseCase: RemoveFavoriteUseCase,
     private val isFavoriteUseCase: IsFavoriteUseCase,
-    private val getPlaybackProgressUseCase: GetPlaybackProgressUseCase
+    private val getPlaybackProgressUseCase: GetPlaybackProgressUseCase,
+    private val playbackManager: PlaybackManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MovieDetailUiState())
@@ -53,6 +55,13 @@ class MovieDetailViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = null
         )
+
+    // Expose playback manager properties
+    val playbackState: StateFlow<PlaybackState> = playbackManager.playbackState
+    val currentMedia: StateFlow<MediaInfo?> = playbackManager.currentMedia
+    
+    // Expose playback manager for direct access
+    fun getPlaybackManager(): PlaybackManager = playbackManager
 
     fun loadMovieDetail(movieId: String) {
         _movieId.value = movieId

@@ -14,10 +14,16 @@ import javax.inject.Inject
 data class MoviesUiState(
     val isLoading: Boolean = false,
     val movies: List<Movie> = emptyList(),
+    val allMovies: List<Movie> = emptyList(),
     val filteredMovies: List<Movie> = emptyList(),
     val categories: List<Category> = emptyList(),
     val selectedCategory: String = "",
     val searchQuery: String = "",
+    val isSearching: Boolean = false,
+    val qualityFilter: String = "",
+    val yearFilter: String = "",
+    val genreFilter: String = "",
+    val sortBy: String = "",
     val error: String? = null
 )
 
@@ -64,6 +70,7 @@ class MoviesViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 movies = movies,
+                                allMovies = movies,
                                 filteredMovies = applyFilters(movies, it.selectedCategory, it.searchQuery),
                                 error = null
                             )
@@ -95,9 +102,63 @@ class MoviesViewModel @Inject constructor(
         _uiState.update { currentState ->
             currentState.copy(
                 searchQuery = query,
+                isSearching = query.isNotEmpty(),
                 filteredMovies = applyFilters(allMovies, currentState.selectedCategory, query)
             )
         }
+    }
+
+    fun filterByQuality(quality: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                qualityFilter = quality,
+                filteredMovies = applyAllFilters(allMovies, currentState)
+            )
+        }
+    }
+
+    fun filterByYear(year: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                yearFilter = year,
+                filteredMovies = applyAllFilters(allMovies, currentState)
+            )
+        }
+    }
+
+    fun filterByGenre(genre: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                genreFilter = genre,
+                filteredMovies = applyAllFilters(allMovies, currentState)
+            )
+        }
+    }
+
+    fun sortBy(sortOption: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                sortBy = sortOption,
+                filteredMovies = applyAllFilters(allMovies, currentState)
+            )
+        }
+    }
+
+    fun clearFilters() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedCategory = "",
+                qualityFilter = "",
+                yearFilter = "",
+                genreFilter = "",
+                sortBy = "",
+                filteredMovies = allMovies
+            )
+        }
+    }
+
+    fun toggleFavorite(movieId: String) {
+        // TODO: Implement favorite functionality
     }
 
     private fun applyFilters(
@@ -117,6 +178,56 @@ class MoviesViewModel @Inject constructor(
             filtered = filtered.filter { 
                 it.name.contains(searchQuery, ignoreCase = true)
             }
+        }
+
+        return filtered
+    }
+
+    private fun applyAllFilters(movies: List<Movie>, state: MoviesUiState): List<Movie> {
+        var filtered = movies
+
+        // Filtrar por categoría
+        if (state.selectedCategory.isNotEmpty()) {
+            filtered = filtered.filter { it.categoryId == state.selectedCategory }
+        }
+
+        // Filtrar por búsqueda
+        if (state.searchQuery.isNotEmpty()) {
+            filtered = filtered.filter { 
+                it.name.contains(state.searchQuery, ignoreCase = true)
+            }
+        }
+
+        // Filtrar por calidad
+        if (state.qualityFilter.isNotEmpty()) {
+            filtered = filtered.filter { 
+                it.quality?.contains(state.qualityFilter, ignoreCase = true) == true
+            }
+        }
+
+        // Filtrar por año
+        if (state.yearFilter.isNotEmpty()) {
+            filtered = filtered.filter { 
+                it.year == state.yearFilter
+            }
+        }
+
+        // Filtrar por género
+        if (state.genreFilter.isNotEmpty()) {
+            filtered = filtered.filter { 
+                it.genre?.contains(state.genreFilter, ignoreCase = true) == true
+            }
+        }
+
+        // Aplicar ordenamiento
+        filtered = when (state.sortBy) {
+            "name_asc" -> filtered.sortedBy { it.name }
+            "name_desc" -> filtered.sortedByDescending { it.name }
+            "year_asc" -> filtered.sortedBy { it.year }
+            "year_desc" -> filtered.sortedByDescending { it.year }
+            "rating_asc" -> filtered.sortedBy { it.rating?.toDoubleOrNull() ?: 0.0 }
+            "rating_desc" -> filtered.sortedByDescending { it.rating?.toDoubleOrNull() ?: 0.0 }
+            else -> filtered
         }
 
         return filtered

@@ -187,7 +187,7 @@ fun MoviesScreen(
                     viewMode = viewMode,
                     onMovieClick = onMovieClick,
                     onFavoriteClick = { movie ->
-                        viewModel.toggleFavorite(movie)
+                        viewModel.toggleFavorite(movie.streamId)
                     },
                     modifier = Modifier.fillMaxSize()
                 )
