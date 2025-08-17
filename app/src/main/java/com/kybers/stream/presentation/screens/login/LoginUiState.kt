@@ -16,7 +16,9 @@ data class LoginUiState(
     val isLoginSuccessful: Boolean = false,
     val serverError: String? = null,
     val usernameError: String? = null,
-    val passwordError: String? = null
+    val passwordError: String? = null,
+    val syncUiState: SyncUiState = SyncUiState(),
+    val authenticatedUser: UserProfile? = null
 ) {
     val isFormValid: Boolean
         get() = server.isNotBlank() && 

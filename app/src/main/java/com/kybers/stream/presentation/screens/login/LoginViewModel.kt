@@ -7,17 +7,20 @@ import com.kybers.stream.domain.model.LoginRequest
 import com.kybers.stream.domain.model.UserProfile
 import com.kybers.stream.domain.usecase.GetSavedProfilesUseCase
 import com.kybers.stream.domain.usecase.LoginUserUseCase
+import com.kybers.stream.data.sync.SyncManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUserUseCase: LoginUserUseCase,
-    private val getSavedProfilesUseCase: GetSavedProfilesUseCase
+    private val getSavedProfilesUseCase: GetSavedProfilesUseCase,
+    private val syncManager: SyncManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -87,11 +90,31 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = loginUserUseCase(loginRequest)) {
                 is AuthResult.Success -> {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        isLoginSuccessful = true,
-                        errorMessage = null
-                    )
+                    val userProfile = result.userProfile
+                    
+                    // Verificar si necesita sincronización
+                    val needsSync = loginUserUseCase.needsSync(userProfile)
+                    
+                    if (needsSync) {
+                        // Mostrar diálogo de sincronización y proceder
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            authenticatedUser = userProfile,
+                            syncUiState = SyncUiState(
+                                isVisible = true,
+                                isLoading = true,
+                                currentStep = SyncStep.STARTING
+                            )
+                        )
+                        performDataSync()
+                    } else {
+                        // Caché válido, ir directamente a home
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            isLoginSuccessful = true,
+                            errorMessage = null
+                        )
+                    }
                 }
                 is AuthResult.Error -> {
                     _uiState.value = _uiState.value.copy(
@@ -105,6 +128,81 @@ class LoginViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun performDataSync() {
+        try {
+            // Realizar la sincronización con callbacks de progreso
+            val syncResult = syncManager.performInitialSyncWithCallback { step, progress ->
+                val syncStep = when {
+                    step.contains("categorías", ignoreCase = true) -> SyncStep.CATEGORIES
+                    step.contains("canales", ignoreCase = true) -> SyncStep.CHANNELS  
+                    step.contains("películas", ignoreCase = true) -> SyncStep.MOVIES
+                    step.contains("series", ignoreCase = true) -> SyncStep.SERIES
+                    step.contains("Finalizando", ignoreCase = true) -> SyncStep.FINISHING
+                    step.contains("completada", ignoreCase = true) -> SyncStep.COMPLETED
+                    else -> SyncStep.STARTING
+                }
+                
+                updateSyncProgress(syncStep, progress)
+            }
+            
+            if (syncResult.isSuccess) {
+                updateSyncProgress(SyncStep.COMPLETED, 1.0f)
+                delay(1500) // Mostrar completado un momento
+                
+                // Ocultar diálogo y navegar a home
+                _uiState.value = _uiState.value.copy(
+                    syncUiState = SyncUiState(isVisible = false),
+                    isLoginSuccessful = true
+                )
+            } else {
+                updateSyncProgress(SyncStep.ERROR, 0f)
+                _uiState.value = _uiState.value.copy(
+                    syncUiState = _uiState.value.syncUiState.copy(
+                        errorMessage = "Error al sincronizar datos: ${syncResult.exceptionOrNull()?.message}"
+                    )
+                )
+            }
+            
+        } catch (e: Exception) {
+            updateSyncProgress(SyncStep.ERROR, 0f)
+            _uiState.value = _uiState.value.copy(
+                syncUiState = _uiState.value.syncUiState.copy(
+                    errorMessage = "Error inesperado: ${e.message}"
+                )
+            )
+        }
+    }
+
+    private fun updateSyncProgress(step: SyncStep, progress: Float) {
+        _uiState.value = _uiState.value.copy(
+            syncUiState = _uiState.value.syncUiState.copy(
+                currentStep = step,
+                progress = progress,
+                isLoading = step != SyncStep.COMPLETED && step != SyncStep.ERROR
+            )
+        )
+    }
+
+    fun onSyncRetry() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                syncUiState = _uiState.value.syncUiState.copy(
+                    isLoading = true,
+                    currentStep = SyncStep.STARTING,
+                    errorMessage = null
+                )
+            )
+            performDataSync()
+        }
+    }
+
+    fun onSyncCancel() {
+        _uiState.value = _uiState.value.copy(
+            syncUiState = SyncUiState(isVisible = false),
+            errorMessage = "Sincronización cancelada"
+        )
     }
 
     private fun validateInput(): Boolean {
@@ -151,7 +249,10 @@ class LoginViewModel @Inject constructor(
     }
 
     fun resetLoginSuccess() {
-        _uiState.value = _uiState.value.copy(isLoginSuccessful = false)
+        _uiState.value = _uiState.value.copy(
+            isLoginSuccessful = false,
+            syncUiState = SyncUiState()
+        )
     }
 
     fun onRememberUserChanged(remember: Boolean) {

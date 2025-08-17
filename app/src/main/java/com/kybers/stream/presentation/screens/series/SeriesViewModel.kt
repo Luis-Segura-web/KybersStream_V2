@@ -89,10 +89,7 @@ class SeriesViewModel @Inject constructor(
                             )
                         }
                         
-                        // Enriquecer con datos de TMDB
-                        if (_uiState.value.useTMDBData) {
-                            enrichSeriesWithTMDB(result.data)
-                        }
+                        // Ya no enriquecemos con TMDB aquí - se hace bajo demanda en detalles
                     }
                     is XtreamResult.Error -> {
                         _uiState.update { 
@@ -109,38 +106,7 @@ class SeriesViewModel @Inject constructor(
             }
         }
     }
-    
-    private fun enrichSeriesWithTMDB(series: List<Series>) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isEnrichingWithTMDB = true) }
-            
-            tmdbUseCases.enrichSeriesList(series).fold(
-                onSuccess = { enrichedSeries ->
-                    allEnrichedSeries = enrichedSeries
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            isEnrichingWithTMDB = false,
-                            enrichedSeries = enrichedSeries,
-                            allEnrichedSeries = enrichedSeries,
-                            filteredEnrichedSeries = applyFiltersToEnriched(
-                                enrichedSeries, 
-                                currentState.selectedCategory, 
-                                currentState.searchQuery
-                            )
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    _uiState.update { 
-                        it.copy(
-                            isEnrichingWithTMDB = false,
-                            error = "Error enriqueciendo con TMDB: ${error.message}"
-                        )
-                    }
-                }
-            )
-        }
-    }
+
 
     fun selectCategory(categoryName: String) {
         _uiState.update { currentState ->
@@ -222,10 +188,8 @@ class SeriesViewModel @Inject constructor(
             currentState.copy(useTMDBData = newUseTMDB)
         }
         
-        // Si se activa TMDB y no tenemos datos enriquecidos, los cargamos
-        if (_uiState.value.useTMDBData && allEnrichedSeries.isEmpty() && allSeries.isNotEmpty()) {
-            enrichSeriesWithTMDB(allSeries)
-        }
+        // TMDB ahora se carga bajo demanda en pantallas de detalle solamente
+        // No se cargan datos TMDB en las listas principales
     }
 
     private fun applyFilters(

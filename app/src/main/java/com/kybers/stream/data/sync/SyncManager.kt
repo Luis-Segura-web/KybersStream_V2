@@ -44,6 +44,71 @@ class SyncManager @Inject constructor(
         }
     }
     
+    suspend fun performInitialSyncWithCallback(
+        onProgress: (step: String, progress: Float) -> Unit
+    ): Result<Unit> {
+        return try {
+            val user = userRepository.getCurrentUser().first()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+            
+            val userHash = databaseCacheManager.generateUserHash(user.username, user.password, user.server)
+            
+            // Verificar si ya tenemos datos válidos en cache
+            if (databaseCacheManager.isXtreamCacheValid(userHash)) {
+                onProgress("Cache válido encontrado", 1.0f)
+                return Result.success(Unit)
+            }
+            
+            onProgress("Preparando sincronización", 0.1f)
+            
+            // Limpiar cache expirado de otros usuarios
+            databaseCacheManager.cleanupOtherUsersData(userHash)
+            
+            // Sincronizar datos completos con callbacks
+            syncAllDataWithCallbacks(userHash, onProgress)
+            
+            onProgress("Sincronización completada", 1.0f)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    private suspend fun syncAllDataWithCallbacks(
+        userHash: String, 
+        onProgress: (step: String, progress: Float) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        
+        onProgress("Cargando categorías", 0.2f)
+        val categoriesResult = syncCategories(userHash)
+        
+        onProgress("Cargando canales", 0.4f)
+        val channelsResult = syncChannels(userHash)
+        
+        onProgress("Cargando películas", 0.6f)
+        val moviesResult = syncMovies(userHash)
+        
+        onProgress("Cargando series", 0.8f)
+        val seriesResult = syncSeries(userHash)
+        
+        onProgress("Finalizando", 0.9f)
+        
+        // Contar elementos sincronizados
+        val moviesCount = (moviesResult as? List<*>)?.size ?: 0
+        val seriesCount = (seriesResult as? List<*>)?.size ?: 0
+        val channelsCount = (channelsResult as? List<*>)?.size ?: 0
+        val categoriesCount = (categoriesResult as? List<*>)?.size ?: 0
+        
+        // Actualizar metadata de sincronización
+        databaseCacheManager.updateXtreamSyncMetadata(
+            userHash = userHash,
+            moviesCount = moviesCount,
+            seriesCount = seriesCount,
+            channelsCount = channelsCount,
+            categoriesCount = categoriesCount
+        )
+    }
+    
     private suspend fun syncAllData(userHash: String) = withContext(Dispatchers.IO) {
         val jobs = listOf(
             async { syncCategories(userHash) },
@@ -69,6 +134,8 @@ class SyncManager @Inject constructor(
             channelsCount = channelsCount,
             categoriesCount = categoriesCount
         )
+        
+        // NOTA: Los datos TMDB se cargarán bajo demanda en las pantallas de detalles
     }
     
     private suspend fun syncCategories(userHash: String): List<Any> {

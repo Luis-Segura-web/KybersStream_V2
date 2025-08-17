@@ -72,7 +72,12 @@ enum class BottomNavItem(
 fun HomeScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToSearch: () -> Unit = {},
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToMovieDetail: (String) -> Unit = {},
+    onNavigateToSeriesDetail: (String) -> Unit = {},
+    onNavigateToMovies: () -> Unit = {},
+    onNavigateToSeries: () -> Unit = {},
+    onNavigateToTV: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(BottomNavItem.HOME) }
     val configuration = LocalConfiguration.current
@@ -159,16 +164,24 @@ fun HomeScreen(
         ) {
             when (selectedTab) {
                 BottomNavItem.HOME -> {
-                    HomeTabContent(onNavigateToLogin = onNavigateToLogin)
+                    HomeTabContent(
+                        onNavigateToLogin = onNavigateToLogin,
+                        onNavigateToMovieDetail = onNavigateToMovieDetail,
+                        onNavigateToSeriesDetail = onNavigateToSeriesDetail
+                    )
                 }
                 BottomNavItem.TV -> {
                     TvScreen()
                 }
                 BottomNavItem.MOVIES -> {
-                    MoviesScreen()
+                    MoviesScreen(
+                        onNavigateToMovieDetail = { movieId -> onNavigateToMovieDetail(movieId) }
+                    )
                 }
                 BottomNavItem.SERIES -> {
-                    SeriesScreen()
+                    SeriesScreen(
+                        onNavigateToSeriesDetail = { seriesId -> onNavigateToSeriesDetail(seriesId) }
+                    )
                 }
                 BottomNavItem.SETTINGS -> {
                     // El settings se navega externamente
@@ -181,6 +194,8 @@ fun HomeScreen(
 @Composable
 fun HomeTabContent(
     onNavigateToLogin: () -> Unit,
+    onNavigateToMovieDetail: (String) -> Unit,
+    onNavigateToSeriesDetail: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -268,8 +283,7 @@ fun HomeTabContent(
                             title = "Películas Recientes",
                             movies = uiState.recentMovies,
                             onMovieClick = { movie -> 
-                                // TODO: Navigate to movie detail screen
-                                // navigationController.navigate("movie_detail/${movie.streamId}")
+                                onNavigateToMovieDetail(movie.streamId)
                             },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
@@ -283,8 +297,7 @@ fun HomeTabContent(
                             title = "Series Recientes",
                             series = uiState.recentSeries,
                             onSeriesClick = { series -> 
-                                // TODO: Navigate to series detail screen
-                                // navigationController.navigate("series_detail/${series.seriesId}")
+                                onNavigateToSeriesDetail(series.seriesId)
                             },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )

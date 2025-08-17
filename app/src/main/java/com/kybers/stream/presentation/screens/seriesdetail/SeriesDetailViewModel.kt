@@ -8,6 +8,7 @@ import com.kybers.stream.domain.usecase.favorites.RemoveFavoriteUseCase
 import com.kybers.stream.domain.usecase.favorites.IsFavoriteUseCase
 import com.kybers.stream.domain.usecase.TMDBUseCases
 import com.kybers.stream.domain.repository.XtreamRepository
+import com.kybers.stream.data.cache.DatabaseCacheManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -28,7 +29,8 @@ class SeriesDetailViewModel @Inject constructor(
     private val removeFavoriteUseCase: RemoveFavoriteUseCase,
     private val isFavoriteUseCase: IsFavoriteUseCase,
     private val tmdbUseCases: TMDBUseCases,
-    private val xtreamRepository: XtreamRepository
+    private val xtreamRepository: XtreamRepository,
+    private val databaseCacheManager: DatabaseCacheManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SeriesDetailUiState())
@@ -108,46 +110,74 @@ class SeriesDetailViewModel @Inject constructor(
             _uiState.update { it.copy(isLoadingTMDB = true, tmdbError = null) }
             
             try {
-                // Verificar cache primero, luego API si es necesario
-                val tmdbResult = tmdbUseCases.getSeriesDetails(tmdbId)
-                if (tmdbResult.isSuccess) {
-                    // Crear serie base desde datos de Xtream para el enriquecimiento
+                // Verificar caché local primero
+                val cachedData = databaseCacheManager.getCachedTMDBSeries(tmdbId)
+                if (cachedData != null && databaseCacheManager.isTMDBCacheValid(tmdbId)) {
+                    // Usar datos del caché
                     val currentDetail = _uiState.value.seriesDetail
                     if (currentDetail != null) {
-                        val baseSeries = Series(
-                            seriesId = currentDetail.seriesId,
-                            name = currentDetail.name,
-                            cover = currentDetail.poster,
-                            categoryId = "0", // Default category
-                            plot = currentDetail.plot,
-                            cast = currentDetail.cast,
-                            director = currentDetail.director,
-                            genre = currentDetail.genre,
-                            releaseDate = currentDetail.releaseDate,
-                            lastModified = System.currentTimeMillis(),
-                            rating = currentDetail.rating,
-                            rating5Based = currentDetail.rating?.toDoubleOrNull() ?: 0.0,
-                            backdropPath = emptyList(),
-                            youtubeTrailer = null,
-                            episodeRunTime = null,
-                            tmdbId = tmdbId
-                        )
+                        _uiState.update { 
+                            it.copy(
+                                isLoadingTMDB = false,
+                                enrichedSeriesData = EnrichedSeries(
+                                    seriesId = currentDetail.seriesId,
+                                    name = currentDetail.name,
+                                    cover = currentDetail.poster,
+                                    categoryId = "", // Se podría obtener del contexto si es necesario
+                                    plot = currentDetail.plot,
+                                    cast = currentDetail.cast,
+                                    director = currentDetail.director,
+                                    genre = currentDetail.genre,
+                                    releaseDate = currentDetail.releaseDate,
+                                    lastModified = System.currentTimeMillis(),
+                                    rating = currentDetail.rating,
+                                    rating5Based = currentDetail.rating?.toDoubleOrNull() ?: 0.0,
+                                    backdropPath = emptyList(),
+                                    youtubeTrailer = null,
+                                    episodeRunTime = null,
+                                    tmdbId = tmdbId,
+                                    tmdbData = cachedData
+                                ),
+                                tmdbError = null
+                            )
+                        }
+                    }
+                    return@launch
+                }
+                
+                // Si no hay caché válido, obtener de TMDB API
+                val tmdbResult = tmdbUseCases.getSeriesDetails(tmdbId)
+                if (tmdbResult.isSuccess) {
+                    val tmdbData = tmdbResult.getOrNull()
+                    if (tmdbData != null) {
+                        // Guardar en caché
+                        databaseCacheManager.cacheTMDBSeries(tmdbData, tmdbId)
                         
-                        // Enriquecer con datos TMDB
-                        val enrichResult = tmdbUseCases.enrichSeries(baseSeries)
-                        if (enrichResult.isSuccess) {
+                        val currentDetail = _uiState.value.seriesDetail
+                        if (currentDetail != null) {
                             _uiState.update { 
                                 it.copy(
                                     isLoadingTMDB = false,
-                                    enrichedSeriesData = enrichResult.getOrNull(),
+                                    enrichedSeriesData = EnrichedSeries(
+                                        seriesId = currentDetail.seriesId,
+                                        name = currentDetail.name,
+                                        cover = currentDetail.poster,
+                                        categoryId = "", // Se podría obtener del contexto si es necesario
+                                        plot = currentDetail.plot,
+                                        cast = currentDetail.cast,
+                                        director = currentDetail.director,
+                                        genre = currentDetail.genre,
+                                        releaseDate = currentDetail.releaseDate,
+                                        lastModified = System.currentTimeMillis(),
+                                        rating = currentDetail.rating,
+                                        rating5Based = currentDetail.rating?.toDoubleOrNull() ?: 0.0,
+                                        backdropPath = emptyList(),
+                                        youtubeTrailer = null,
+                                        episodeRunTime = null,
+                                        tmdbId = tmdbId,
+                                        tmdbData = tmdbData
+                                    ),
                                     tmdbError = null
-                                )
-                            }
-                        } else {
-                            _uiState.update { 
-                                it.copy(
-                                    isLoadingTMDB = false,
-                                    tmdbError = "Error enriqueciendo datos: ${enrichResult.exceptionOrNull()?.message}"
                                 )
                             }
                         }

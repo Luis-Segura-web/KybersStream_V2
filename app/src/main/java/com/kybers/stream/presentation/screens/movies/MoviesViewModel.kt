@@ -89,10 +89,7 @@ class MoviesViewModel @Inject constructor(
                             )
                         }
                         
-                        // Enriquecer con datos de TMDB
-                        if (_uiState.value.useTMDBData) {
-                            enrichMoviesWithTMDB(result.data)
-                        }
+                        // Ya no enriquecemos con TMDB aquí - se hace bajo demanda en detalles
                     }
                     is XtreamResult.Error -> {
                         _uiState.update { 
@@ -109,38 +106,7 @@ class MoviesViewModel @Inject constructor(
             }
         }
     }
-    
-    private fun enrichMoviesWithTMDB(movies: List<Movie>) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isEnrichingWithTMDB = true) }
-            
-            tmdbUseCases.enrichMoviesList(movies).fold(
-                onSuccess = { enrichedMovies ->
-                    allEnrichedMovies = enrichedMovies
-                    _uiState.update { currentState ->
-                        currentState.copy(
-                            isEnrichingWithTMDB = false,
-                            enrichedMovies = enrichedMovies,
-                            allEnrichedMovies = enrichedMovies,
-                            filteredEnrichedMovies = applyFiltersToEnriched(
-                                enrichedMovies, 
-                                currentState.selectedCategory, 
-                                currentState.searchQuery
-                            )
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    _uiState.update { 
-                        it.copy(
-                            isEnrichingWithTMDB = false,
-                            error = "Error enriqueciendo con TMDB: ${error.message}"
-                        )
-                    }
-                }
-            )
-        }
-    }
+
 
     fun selectCategory(categoryName: String) {
         _uiState.update { currentState ->
@@ -222,10 +188,8 @@ class MoviesViewModel @Inject constructor(
             currentState.copy(useTMDBData = newUseTMDB)
         }
         
-        // Si se activa TMDB y no tenemos datos enriquecidos, los cargamos
-        if (_uiState.value.useTMDBData && allEnrichedMovies.isEmpty() && allMovies.isNotEmpty()) {
-            enrichMoviesWithTMDB(allMovies)
-        }
+        // TMDB ahora se carga bajo demanda en pantallas de detalle solamente
+        // No se cargan datos TMDB en las listas principales
     }
 
     private fun applyFilters(

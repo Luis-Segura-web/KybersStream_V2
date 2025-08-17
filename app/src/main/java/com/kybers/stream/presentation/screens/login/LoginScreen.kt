@@ -70,6 +70,13 @@ fun LoginScreen(
         }
     }
 
+    // Diálogo de sincronización
+    SyncDataDialog(
+        syncUiState = uiState.syncUiState,
+        onRetry = viewModel::onSyncRetry,
+        onCancel = viewModel::onSyncCancel
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()

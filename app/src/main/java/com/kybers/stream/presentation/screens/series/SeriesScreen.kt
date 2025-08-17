@@ -44,6 +44,7 @@ import com.kybers.stream.presentation.components.loading.SkeletonComponents
 @Composable
 fun SeriesScreen(
     viewModel: SeriesViewModel = hiltViewModel(),
+    onNavigateToSeriesDetail: (String) -> Unit = {},
     onSeriesClick: (Series) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -180,7 +181,10 @@ fun SeriesScreen(
                 SeriesList(
                     series = uiState.filteredSeries,
                     viewMode = viewMode,
-                    onSeriesClick = onSeriesClick,
+                    onSeriesClick = { series ->
+                        onNavigateToSeriesDetail(series.seriesId)
+                        onSeriesClick(series)
+                    },
                     onFavoriteClick = { series ->
                         viewModel.toggleFavorite(series.seriesId)
                     },

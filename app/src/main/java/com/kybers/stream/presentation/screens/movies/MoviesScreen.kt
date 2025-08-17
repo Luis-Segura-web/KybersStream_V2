@@ -49,6 +49,7 @@ enum class ViewMode {
 @Composable
 fun MoviesScreen(
     viewModel: MoviesViewModel = hiltViewModel(),
+    onNavigateToMovieDetail: (String) -> Unit = {},
     onMovieClick: (Movie) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -185,7 +186,10 @@ fun MoviesScreen(
                 MoviesList(
                     movies = uiState.filteredMovies,
                     viewMode = viewMode,
-                    onMovieClick = onMovieClick,
+                    onMovieClick = { movie ->
+                        onNavigateToMovieDetail(movie.streamId)
+                        onMovieClick(movie)
+                    },
                     onFavoriteClick = { movie ->
                         viewModel.toggleFavorite(movie.streamId)
                     },
