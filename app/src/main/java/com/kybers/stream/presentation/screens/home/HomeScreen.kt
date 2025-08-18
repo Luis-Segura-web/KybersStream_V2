@@ -45,6 +45,9 @@ import com.kybers.stream.domain.model.FavoriteItem
 import com.kybers.stream.domain.model.PlaybackProgress
 import com.kybers.stream.domain.model.Movie
 import com.kybers.stream.domain.model.Series
+import com.kybers.stream.domain.model.TMDBFilteredContent
+import com.kybers.stream.domain.model.EnrichedTMDBMovie
+import com.kybers.stream.domain.model.EnrichedTMDBSeries
 import com.kybers.stream.presentation.screens.movies.MoviesScreen
 import com.kybers.stream.presentation.screens.series.SeriesScreen
 import com.kybers.stream.presentation.screens.tv.TvScreen
@@ -302,6 +305,124 @@ fun HomeTabContent(
                             onSeriesClick = { series -> 
                                 onNavigateToSeriesDetail(series.seriesId)
                             },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+                
+                // ========== SECCIONES TMDB FILTRADAS ==========
+                uiState.tmdbFilteredContent?.let { tmdbContent ->
+                    // Películas populares de TMDB (filtradas por disponibilidad)
+                    if (tmdbContent.popularMovies.isNotEmpty()) {
+                        item {
+                            TMDBMoviesSection(
+                                title = "🔥 Películas Populares",
+                                subtitle = "Lo más popular según TMDB",
+                                movies = tmdbContent.popularMovies,
+                                onMovieClick = { movie -> 
+                                    onNavigateToMovieDetail(movie.xtreamMovie.streamId)
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
+                    
+                    // Películas trending de TMDB
+                    if (tmdbContent.trendingMovies.isNotEmpty()) {
+                        item {
+                            TMDBMoviesSection(
+                                title = "📈 Películas en Tendencia",
+                                subtitle = "Las más comentadas esta semana",
+                                movies = tmdbContent.trendingMovies,
+                                onMovieClick = { movie -> 
+                                    onNavigateToMovieDetail(movie.xtreamMovie.streamId)
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
+                    
+                    // Películas mejor calificadas de TMDB
+                    if (tmdbContent.topRatedMovies.isNotEmpty()) {
+                        item {
+                            TMDBMoviesSection(
+                                title = "⭐ Películas Mejor Calificadas",
+                                subtitle = "Las mejores según críticos y usuarios",
+                                movies = tmdbContent.topRatedMovies,
+                                onMovieClick = { movie -> 
+                                    onNavigateToMovieDetail(movie.xtreamMovie.streamId)
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
+                    
+                    // Series populares de TMDB
+                    if (tmdbContent.popularSeries.isNotEmpty()) {
+                        item {
+                            TMDBSeriesSection(
+                                title = "🔥 Series Populares",
+                                subtitle = "Las series más populares según TMDB",
+                                series = tmdbContent.popularSeries,
+                                onSeriesClick = { series -> 
+                                    onNavigateToSeriesDetail(series.xtreamSeries.seriesId)
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
+                    
+                    // Series trending de TMDB
+                    if (tmdbContent.trendingSeries.isNotEmpty()) {
+                        item {
+                            TMDBSeriesSection(
+                                title = "📈 Series en Tendencia",
+                                subtitle = "Las más comentadas esta semana",
+                                series = tmdbContent.trendingSeries,
+                                onSeriesClick = { series -> 
+                                    onNavigateToSeriesDetail(series.xtreamSeries.seriesId)
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
+                    
+                    // Series mejor calificadas de TMDB
+                    if (tmdbContent.topRatedSeries.isNotEmpty()) {
+                        item {
+                            TMDBSeriesSection(
+                                title = "⭐ Series Mejor Calificadas",
+                                subtitle = "Las mejores series según críticos y usuarios",
+                                series = tmdbContent.topRatedSeries,
+                                onSeriesClick = { series -> 
+                                    onNavigateToSeriesDetail(series.xtreamSeries.seriesId)
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
+                }
+                
+                // Estado de carga para TMDB
+                if (uiState.isLoadingTMDB) {
+                    items(3) { index ->
+                        SkeletonContentSection(
+                            title = when (index) {
+                                0 -> "🔥 Películas Populares"
+                                1 -> "📈 Series en Tendencia" 
+                                else -> "⭐ Mejor Calificados"
+                            }
+                        )
+                    }
+                }
+                
+                // Error de TMDB
+                uiState.tmdbError?.let { error ->
+                    item {
+                        ErrorStateCard(
+                            title = "Error al cargar contenido TMDB",
+                            message = error,
+                            onRetry = { viewModel.refreshTMDBContent() },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
@@ -1335,6 +1456,326 @@ fun XtreamSeriesCard(
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+// ========== SECCIONES TMDB ==========
+
+@Composable
+fun TMDBMoviesSection(
+    title: String,
+    subtitle: String,
+    movies: List<EnrichedTMDBMovie>,
+    onMovieClick: (EnrichedTMDBMovie) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Column(
+            modifier = Modifier.padding(bottom = 12.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+        }
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(
+                items = movies.take(10), // Limitar a 10 elementos
+                key = { it.tmdbData.id }
+            ) { movie ->
+                TMDBMovieCard(
+                    movie = movie,
+                    onClick = { onMovieClick(movie) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TMDBSeriesSection(
+    title: String,
+    subtitle: String,
+    series: List<EnrichedTMDBSeries>,
+    onSeriesClick: (EnrichedTMDBSeries) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Column(
+            modifier = Modifier.padding(bottom = 12.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+        }
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            items(
+                items = series.take(10), // Limitar a 10 elementos
+                key = { it.tmdbData.id }
+            ) { seriesItem ->
+                TMDBSeriesCard(
+                    series = seriesItem,
+                    onClick = { onSeriesClick(seriesItem) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TMDBMovieCard(
+    movie: EnrichedTMDBMovie,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .width(140.dp)
+            .height(230.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Imagen de fondo
+            AsyncImage(
+                model = movie.tmdbData.posterPath,
+                contentDescription = "Poster de ${movie.tmdbData.title}",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            
+            // Gradiente para mejorar la legibilidad
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.8f)
+                            ),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
+            )
+            
+            // Información superpuesta
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = movie.tmdbData.title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Spacer(modifier = Modifier.height(2.dp))
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (movie.tmdbData.voteAverage > 0) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = Color(0xFFFFD700)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = String.format("%.1f", movie.tmdbData.voteAverage),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                    
+                    movie.tmdbData.releaseDate?.let { releaseDate ->
+                        if (movie.tmdbData.voteAverage > 0) {
+                            Text(
+                                text = " • ",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.7f)
+                            )
+                        }
+                        Text(
+                            text = releaseDate.take(4),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                }
+            }
+            
+            // Badge de disponibilidad si viene de Xtream
+            if (movie.xtreamMovie != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "✓",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TMDBSeriesCard(
+    series: EnrichedTMDBSeries,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .width(140.dp)
+            .height(230.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Imagen de fondo
+            AsyncImage(
+                model = series.tmdbData.posterPath,
+                contentDescription = "Poster de ${series.tmdbData.name}",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            
+            // Gradiente para mejorar la legibilidad
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.8f)
+                            ),
+                            startY = 0f,
+                            endY = Float.POSITIVE_INFINITY
+                        )
+                    )
+            )
+            
+            // Información superpuesta
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = series.tmdbData.name,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Spacer(modifier = Modifier.height(2.dp))
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (series.tmdbData.voteAverage > 0) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = Color(0xFFFFD700)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = String.format("%.1f", series.tmdbData.voteAverage),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                    
+                    series.tmdbData.firstAirDate?.let { firstAirDate ->
+                        if (series.tmdbData.voteAverage > 0) {
+                            Text(
+                                text = " • ",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.White.copy(alpha = 0.7f)
+                            )
+                        }
+                        Text(
+                            text = firstAirDate.take(4),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                }
+            }
+            
+            // Badge de disponibilidad si viene de Xtream
+            if (series.xtreamSeries != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "✓",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

@@ -50,6 +50,47 @@ interface TMDBApi {
         @Query("language") language: String = "es-ES"
     ): Response<TMDBVideosDto>
     
+    // Nuevas funciones para contenido popular
+    @GET("movie/popular")
+    suspend fun getPopularMovies(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String = "es-ES",
+        @Query("page") page: Int = 1
+    ): Response<TMDBMovieListResponseDto>
+    
+    @GET("trending/movie/{time_window}")
+    suspend fun getTrendingMovies(
+        @Path("time_window") timeWindow: String = "week",
+        @Query("api_key") apiKey: String
+    ): Response<TMDBMovieListResponseDto>
+    
+    @GET("movie/top_rated")
+    suspend fun getTopRatedMovies(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String = "es-ES",
+        @Query("page") page: Int = 1
+    ): Response<TMDBMovieListResponseDto>
+    
+    @GET("tv/popular")
+    suspend fun getPopularSeries(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String = "es-ES",
+        @Query("page") page: Int = 1
+    ): Response<TMDBSeriesListResponseDto>
+    
+    @GET("trending/tv/{time_window}")
+    suspend fun getTrendingSeries(
+        @Path("time_window") timeWindow: String = "week",
+        @Query("api_key") apiKey: String
+    ): Response<TMDBSeriesListResponseDto>
+    
+    @GET("tv/top_rated")
+    suspend fun getTopRatedSeries(
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String = "es-ES",
+        @Query("page") page: Int = 1
+    ): Response<TMDBSeriesListResponseDto>
+    
     companion object {
         const val BASE_URL = "https://api.themoviedb.org/3/"
         const val IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"

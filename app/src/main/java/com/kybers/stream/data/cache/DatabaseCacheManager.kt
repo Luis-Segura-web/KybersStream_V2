@@ -274,6 +274,7 @@ class DatabaseCacheManager @Inject constructor(
     suspend fun getCachedTMDBMovie(tmdbId: String): TMDBMovieData? = withContext(Dispatchers.IO) {
         tmdbCacheDao.getMovieById(tmdbId)?.let { entity ->
             TMDBMovieData(
+                id = entity.tmdbId.toIntOrNull() ?: 0,
                 title = entity.title,
                 originalTitle = entity.originalTitle,
                 overview = entity.overview,
@@ -305,6 +306,7 @@ class DatabaseCacheManager @Inject constructor(
     suspend fun getCachedTMDBSeries(tmdbId: String): TMDBSeriesData? = withContext(Dispatchers.IO) {
         tmdbCacheDao.getSeriesById(tmdbId)?.let { entity ->
             TMDBSeriesData(
+                id = entity.tmdbId.toIntOrNull() ?: 0,
                 name = entity.name,
                 originalName = entity.originalName,
                 overview = entity.overview,
@@ -429,6 +431,7 @@ class DatabaseCacheManager @Inject constructor(
         
         entities.associate { entity ->
             entity.tmdbId to TMDBMovieData(
+                id = entity.tmdbId.toIntOrNull() ?: 0,
                 title = entity.title,
                 originalTitle = entity.originalTitle,
                 overview = entity.overview,
@@ -463,6 +466,7 @@ class DatabaseCacheManager @Inject constructor(
         
         entities.associate { entity ->
             entity.tmdbId to TMDBSeriesData(
+                id = entity.tmdbId.toIntOrNull() ?: 0,
                 name = entity.name,
                 originalName = entity.originalName,
                 overview = entity.overview,

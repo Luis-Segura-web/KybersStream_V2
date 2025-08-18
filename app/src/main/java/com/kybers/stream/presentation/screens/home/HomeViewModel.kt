@@ -22,6 +22,9 @@ data class HomeUiState(
     val recentMovies: List<Movie> = emptyList(),
     val recentSeries: List<Series> = emptyList(),
     val recentContent: List<Any> = emptyList(),
+    val tmdbFilteredContent: TMDBFilteredContent? = null,
+    val isLoadingTMDB: Boolean = false,
+    val tmdbError: String? = null,
     val error: String? = null
 )
 
@@ -50,6 +53,7 @@ class HomeViewModel @Inject constructor(
         loadHomeData()
         refreshDiscovery()
         loadRecentContent()
+        loadTMDBContent()
     }
 
     private fun loadHomeData() {
@@ -85,6 +89,7 @@ class HomeViewModel @Inject constructor(
     fun refresh() {
         loadHomeData()
         loadRecentContent()
+        loadTMDBContent()
     }
 
     fun refreshDiscovery() {
@@ -151,19 +156,37 @@ class HomeViewModel @Inject constructor(
                 val userHash = databaseCacheManager.generateUserHash(user.username, user.password, user.server)
                 
                 // Verificar si el cache de Xtream es válido
-                if (!databaseCacheManager.isXtreamCacheValid(userHash)) {
-                    // Si no es válido, intentar sincronizar
-                    syncManager.performInitialSync()
+                val isCacheValid = databaseCacheManager.isXtreamCacheValid(userHash)
+                
+                if (!isCacheValid) {
+                    try {
+                        // Si no es válido, intentar sincronizar
+                        syncManager.performInitialSync()
+                        // Dar un momento para que se complete la sincronización
+                        kotlinx.coroutines.delay(2000)
+                    } catch (syncError: Exception) {
+                        // Continuar de todos modos para ver si hay datos antiguos
+                    }
                 }
                 
-                // Obtener contenido reciente de Xtream desde cache (sin datos TMDB)
-                val recentMovies = databaseCacheManager.getCachedXtreamMovies(userHash)
-                    .sortedByDescending { it.addedTimestamp }
-                    .take(20)
+                // Obtener contenido reciente de Xtream desde cache
+                val allMovies = databaseCacheManager.getCachedXtreamMovies(userHash)
+                val allSeries = databaseCacheManager.getCachedXtreamSeries(userHash)
                 
-                val recentSeries = databaseCacheManager.getCachedXtreamSeries(userHash)
-                    .sortedByDescending { it.lastModified }
-                    .take(20)
+                // Si hay pocos elementos con timestamp válido, usar los primeros elementos
+                val recentMovies = if (allMovies.any { it.addedTimestamp > 0 }) {
+                    allMovies.sortedByDescending { it.addedTimestamp }.take(20)
+                } else {
+                    // Fallback: usar los primeros 20 si no hay timestamps válidos
+                    allMovies.take(20)
+                }
+                
+                val recentSeries = if (allSeries.any { it.lastModified > 0 }) {
+                    allSeries.sortedByDescending { it.lastModified }.take(20)
+                } else {
+                    // Fallback: usar los primeros 20 si no hay timestamps válidos  
+                    allSeries.take(20)
+                }
                 
                 _uiState.update { currentState ->
                     currentState.copy(
@@ -171,11 +194,54 @@ class HomeViewModel @Inject constructor(
                         recentSeries = recentSeries
                     )
                 }
+                
             } catch (e: Exception) {
                 _uiState.update { currentState ->
                     currentState.copy(error = "Error cargando contenido reciente: ${e.message}")
                 }
             }
         }
+    }
+    
+    private fun loadTMDBContent() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingTMDB = true, tmdbError = null) }
+            
+            try {
+                val user = userRepository.getCurrentUser().first() ?: return@launch
+                val userHash = databaseCacheManager.generateUserHash(user.username, user.password, user.server)
+                
+                // Obtener contenido TMDB filtrado con el disponible en Xtream
+                tmdbUseCases.getFilteredTMDBContent(userHash)
+                    .onSuccess { filteredContent ->
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                isLoadingTMDB = false,
+                                tmdbFilteredContent = filteredContent,
+                                tmdbError = null
+                            )
+                        }
+                    }
+                    .onFailure { error ->
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                isLoadingTMDB = false,
+                                tmdbError = error.message ?: "Error cargando contenido TMDB"
+                            )
+                        }
+                    }
+            } catch (e: Exception) {
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoadingTMDB = false,
+                        tmdbError = "Error inesperado: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+    
+    fun refreshTMDBContent() {
+        loadTMDBContent()
     }
 }

@@ -41,6 +41,7 @@ data class EnrichedSeries(
 )
 
 data class TMDBMovieData(
+    val id: Int,
     val title: String,
     val originalTitle: String,
     val overview: String?,
@@ -68,6 +69,7 @@ data class TMDBMovieData(
 )
 
 data class TMDBSeriesData(
+    val id: Int,
     val name: String,
     val originalName: String,
     val overview: String?,
@@ -183,3 +185,27 @@ data class TMDBVideo(
     val isYoutube: Boolean get() = site.equals("YouTube", ignoreCase = true)
     val youtubeUrl: String? get() = if (isYoutube) "https://www.youtube.com/watch?v=$key" else null
 }
+
+// Nuevos modelos para contenido filtrado de TMDB
+data class TMDBFilteredContent(
+    val popularMovies: List<EnrichedTMDBMovie> = emptyList(),
+    val trendingMovies: List<EnrichedTMDBMovie> = emptyList(),
+    val topRatedMovies: List<EnrichedTMDBMovie> = emptyList(),
+    val popularSeries: List<EnrichedTMDBSeries> = emptyList(),
+    val trendingSeries: List<EnrichedTMDBSeries> = emptyList(),
+    val topRatedSeries: List<EnrichedTMDBSeries> = emptyList()
+) {
+    val hasContent: Boolean get() = 
+        popularMovies.isNotEmpty() || trendingMovies.isNotEmpty() || topRatedMovies.isNotEmpty() ||
+        popularSeries.isNotEmpty() || trendingSeries.isNotEmpty() || topRatedSeries.isNotEmpty()
+}
+
+data class EnrichedTMDBMovie(
+    val tmdbData: TMDBMovieData,
+    val xtreamMovie: Movie
+)
+
+data class EnrichedTMDBSeries(
+    val tmdbData: TMDBSeriesData,
+    val xtreamSeries: Series
+)

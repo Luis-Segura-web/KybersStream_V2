@@ -150,15 +150,9 @@ class TMDBRepositoryImpl @Inject constructor(
         return try {
             coroutineScope {
                 val enrichedMovies = movies.map { movie ->
-                    async { enrichMovie(movie) }
-                }.awaitAll()
-                
-                val failures = enrichedMovies.filter { it.isFailure }
-                if (failures.isNotEmpty()) {
-                    Result.failure(failures.first().exceptionOrNull() ?: Exception("Error enriqueciendo películas"))
-                } else {
-                    Result.success(enrichedMovies.mapNotNull { it.getOrNull() })
+                    async { enrichMovie(movie).getOrNull() }
                 }
+                Result.success(enrichedMovies.awaitAll().filterNotNull())
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -169,15 +163,134 @@ class TMDBRepositoryImpl @Inject constructor(
         return try {
             coroutineScope {
                 val enrichedSeries = seriesList.map { series ->
-                    async { enrichSeries(series) }
-                }.awaitAll()
-                
-                val failures = enrichedSeries.filter { it.isFailure }
-                if (failures.isNotEmpty()) {
-                    Result.failure(failures.first().exceptionOrNull() ?: Exception("Error enriqueciendo series"))
-                } else {
-                    Result.success(enrichedSeries.mapNotNull { it.getOrNull() })
+                    async { enrichSeries(series).getOrNull() }
                 }
+                Result.success(enrichedSeries.awaitAll().filterNotNull())
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    // Implementaciones de los nuevos métodos para contenido popular
+    override suspend fun getPopularMovies(): Result<List<TMDBMovieData>> {
+        return try {
+            val response = tmdbApi.getPopularMovies(
+                apiKey = TMDB_API_KEY,
+                language = LANGUAGE,
+                page = 1
+            )
+            
+            if (response.isSuccessful) {
+                response.body()?.let { responseBody ->
+                    val movieData = responseBody.results.map { movieDto -> movieDto.toDomain() }
+                    Result.success(movieData)
+                } ?: Result.failure(Exception("Respuesta vacía de TMDB"))
+            } else {
+                Result.failure(Exception("Error TMDB: ${response.code()} - ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getTrendingMovies(): Result<List<TMDBMovieData>> {
+        return try {
+            val response = tmdbApi.getTrendingMovies(
+                apiKey = TMDB_API_KEY,
+                timeWindow = "week"
+            )
+            
+            if (response.isSuccessful) {
+                response.body()?.let { responseBody ->
+                    val movieData = responseBody.results.map { movieDto -> movieDto.toDomain() }
+                    Result.success(movieData)
+                } ?: Result.failure(Exception("Respuesta vacía de TMDB"))
+            } else {
+                Result.failure(Exception("Error TMDB: ${response.code()} - ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getTopRatedMovies(): Result<List<TMDBMovieData>> {
+        return try {
+            val response = tmdbApi.getTopRatedMovies(
+                apiKey = TMDB_API_KEY,
+                language = LANGUAGE,
+                page = 1
+            )
+            
+            if (response.isSuccessful) {
+                response.body()?.let { responseBody ->
+                    val movieData = responseBody.results.map { movieDto -> movieDto.toDomain() }
+                    Result.success(movieData)
+                } ?: Result.failure(Exception("Respuesta vacía de TMDB"))
+            } else {
+                Result.failure(Exception("Error TMDB: ${response.code()} - ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getPopularSeries(): Result<List<TMDBSeriesData>> {
+        return try {
+            val response = tmdbApi.getPopularSeries(
+                apiKey = TMDB_API_KEY,
+                language = LANGUAGE,
+                page = 1
+            )
+            
+            if (response.isSuccessful) {
+                response.body()?.let { responseBody ->
+                    val seriesData = responseBody.results.map { seriesDto -> seriesDto.toDomain() }
+                    Result.success(seriesData)
+                } ?: Result.failure(Exception("Respuesta vacía de TMDB"))
+            } else {
+                Result.failure(Exception("Error TMDB: ${response.code()} - ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getTrendingSeries(): Result<List<TMDBSeriesData>> {
+        return try {
+            val response = tmdbApi.getTrendingSeries(
+                apiKey = TMDB_API_KEY,
+                timeWindow = "week"
+            )
+            
+            if (response.isSuccessful) {
+                response.body()?.let { responseBody ->
+                    val seriesData = responseBody.results.map { seriesDto -> seriesDto.toDomain() }
+                    Result.success(seriesData)
+                } ?: Result.failure(Exception("Respuesta vacía de TMDB"))
+            } else {
+                Result.failure(Exception("Error TMDB: ${response.code()} - ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getTopRatedSeries(): Result<List<TMDBSeriesData>> {
+        return try {
+            val response = tmdbApi.getTopRatedSeries(
+                apiKey = TMDB_API_KEY,
+                language = LANGUAGE,
+                page = 1
+            )
+            
+            if (response.isSuccessful) {
+                response.body()?.let { responseBody ->
+                    val seriesData = responseBody.results.map { seriesDto -> seriesDto.toDomain() }
+                    Result.success(seriesData)
+                } ?: Result.failure(Exception("Respuesta vacía de TMDB"))
+            } else {
+                Result.failure(Exception("Error TMDB: ${response.code()} - ${response.message()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -185,76 +298,80 @@ class TMDBRepositoryImpl @Inject constructor(
     }
 }
 
-// Extension functions para convertir DTOs a modelos de dominio
-private fun TMDBMovieDto.toDomain(): TMDBMovieData {
-    return TMDBMovieData(
-        title = title,
-        originalTitle = originalTitle,
-        overview = overview,
-        posterPath = TMDBApi.getImageUrl(posterPath),
-        backdropPath = TMDBApi.getImageUrl(backdropPath, TMDBApi.BACKDROP_SIZE_W1280),
-        releaseDate = releaseDate,
-        voteAverage = voteAverage,
-        voteCount = voteCount,
-        runtime = runtime,
-        genres = genres.map { it.toDomain() },
-        productionCompanies = productionCompanies.map { it.toDomain() },
-        productionCountries = productionCountries.map { it.toDomain() },
-        spokenLanguages = spokenLanguages.map { it.toDomain() },
-        adult = adult,
-        budget = budget,
-        revenue = revenue,
-        tagline = tagline,
-        status = status,
-        originalLanguage = originalLanguage,
-        popularity = popularity,
-        homepage = homepage,
-        imdbId = imdbId,
-        credits = null, // Se manejará por separado si es necesario
-        videos = emptyList() // Se manejará por separado si es necesario
-    )
-}
+// Extension functions para conversión de DTOs a domain models
+private fun TMDBMovieDto.toDomain() = TMDBMovieData(
+    id = id,
+    title = title,
+    originalTitle = originalTitle,
+    overview = overview,
+    posterPath = TMDBApi.getImageUrl(posterPath, TMDBApi.POSTER_SIZE_W500),
+    backdropPath = TMDBApi.getImageUrl(backdropPath, TMDBApi.BACKDROP_SIZE_W1280),
+    releaseDate = releaseDate,
+    voteAverage = voteAverage,
+    voteCount = voteCount,
+    runtime = runtime,
+    genres = genres.map { it.toDomain() },
+    productionCompanies = productionCompanies.map { it.toDomain() },
+    productionCountries = productionCountries.map { it.toDomain() },
+    spokenLanguages = spokenLanguages.map { it.toDomain() },
+    adult = adult,
+    budget = budget,
+    revenue = revenue,
+    tagline = tagline,
+    status = status,
+    originalLanguage = originalLanguage,
+    popularity = popularity,
+    homepage = homepage,
+    imdbId = imdbId,
+    credits = null,
+    videos = emptyList()
+)
 
-private fun TMDBSeriesDto.toDomain(): TMDBSeriesData {
-    return TMDBSeriesData(
-        name = name,
-        originalName = originalName,
-        overview = overview,
-        posterPath = TMDBApi.getImageUrl(posterPath),
-        backdropPath = TMDBApi.getImageUrl(backdropPath, TMDBApi.BACKDROP_SIZE_W1280),
-        firstAirDate = firstAirDate,
-        lastAirDate = lastAirDate,
-        voteAverage = voteAverage,
-        voteCount = voteCount,
-        genres = genres.map { it.toDomain() },
-        productionCompanies = productionCompanies.map { it.toDomain() },
-        productionCountries = productionCountries.map { it.toDomain() },
-        spokenLanguages = spokenLanguages.map { it.toDomain() },
-        adult = adult,
-        createdBy = createdBy.map { it.toDomain() },
-        episodeRunTime = episodeRunTime,
-        inProduction = inProduction,
-        numberOfEpisodes = numberOfEpisodes,
-        numberOfSeasons = numberOfSeasons,
-        originalLanguage = originalLanguage,
-        popularity = popularity,
-        status = status,
-        tagline = tagline,
-        type = type,
-        homepage = homepage,
-        networks = networks.map { it.toDomain() },
-        seasons = seasons.map { it.toDomain() },
-        credits = null, // Se manejará por separado si es necesario
-        videos = emptyList() // Se manejará por separado si es necesario
-    )
-}
+// Eliminamos la función TMDBMovieListDto.toDomain() porque usa TMDBMovieDto directamente
 
-private fun TMDBGenreDto.toDomain() = TMDBGenre(id = id, name = name)
+private fun TMDBSeriesDto.toDomain() = TMDBSeriesData(
+    id = id,
+    name = name,
+    originalName = originalName,
+    overview = overview,
+    posterPath = TMDBApi.getImageUrl(posterPath, TMDBApi.POSTER_SIZE_W500),
+    backdropPath = TMDBApi.getImageUrl(backdropPath, TMDBApi.BACKDROP_SIZE_W1280),
+    firstAirDate = firstAirDate,
+    lastAirDate = lastAirDate,
+    voteAverage = voteAverage,
+    voteCount = voteCount,
+    genres = genres.map { it.toDomain() },
+    productionCompanies = productionCompanies.map { it.toDomain() },
+    productionCountries = productionCountries.map { it.toDomain() },
+    spokenLanguages = spokenLanguages.map { it.toDomain() },
+    adult = adult,
+    createdBy = createdBy.map { it.toDomain() },
+    episodeRunTime = episodeRunTime,
+    inProduction = inProduction,
+    numberOfEpisodes = numberOfEpisodes,
+    numberOfSeasons = numberOfSeasons,
+    originalLanguage = originalLanguage,
+    popularity = popularity,
+    status = status,
+    tagline = tagline,
+    type = type,
+    homepage = homepage,
+    seasons = seasons.map { it.toDomain() },
+    credits = null,
+    videos = emptyList()
+)
+
+// Eliminamos la función TMDBSeriesListDto.toDomain() porque usa TMDBSeriesDto directamente
+
+private fun TMDBGenreDto.toDomain() = TMDBGenre(
+    id = id,
+    name = name
+)
 
 private fun TMDBProductionCompanyDto.toDomain() = TMDBProductionCompany(
     id = id,
     name = name,
-    logoPath = TMDBApi.getImageUrl(logoPath),
+    logoPath = TMDBApi.getImageUrl(logoPath, TMDBApi.PROFILE_SIZE_W185),
     originCountry = originCountry
 )
 
@@ -264,8 +381,8 @@ private fun TMDBProductionCountryDto.toDomain() = TMDBProductionCountry(
 )
 
 private fun TMDBSpokenLanguageDto.toDomain() = TMDBSpokenLanguage(
-    iso6391 = iso6391,
     englishName = englishName,
+    iso6391 = iso6391,
     name = name
 )
 
@@ -276,20 +393,13 @@ private fun TMDBCreatedByDto.toDomain() = TMDBCreatedBy(
     profilePath = TMDBApi.getImageUrl(profilePath, TMDBApi.PROFILE_SIZE_W185)
 )
 
-private fun TMDBNetworkDto.toDomain() = TMDBNetwork(
-    id = id,
-    name = name,
-    logoPath = TMDBApi.getImageUrl(logoPath),
-    originCountry = originCountry
-)
-
 private fun TMDBSeasonDto.toDomain() = TMDBSeason(
-    id = id,
     airDate = airDate,
     episodeCount = episodeCount,
+    id = id,
     name = name,
     overview = overview,
-    posterPath = TMDBApi.getImageUrl(posterPath),
+    posterPath = TMDBApi.getImageUrl(posterPath, TMDBApi.POSTER_SIZE_W500),
     seasonNumber = seasonNumber
 )
 
@@ -322,4 +432,66 @@ private fun TMDBVideoDto.toDomain() = TMDBVideo(
     type = type,
     official = official,
     publishedAt = publishedAt
+)
+
+// Funciones de extensión para los DTOs de lista
+private fun TMDBMovieListDto.toDomain() = TMDBMovieData(
+    id = id,
+    title = title,
+    originalTitle = originalTitle,
+    overview = overview,
+    posterPath = TMDBApi.getImageUrl(posterPath, TMDBApi.POSTER_SIZE_W500),
+    backdropPath = TMDBApi.getImageUrl(backdropPath, TMDBApi.BACKDROP_SIZE_W1280),
+    releaseDate = releaseDate,
+    voteAverage = voteAverage,
+    voteCount = voteCount,
+    runtime = null, // No disponible en lista
+    genres = emptyList(), // No disponible en lista
+    productionCompanies = emptyList(),
+    productionCountries = emptyList(),
+    spokenLanguages = emptyList(),
+    adult = adult,
+    budget = null,
+    revenue = null,
+    tagline = null,
+    status = null,
+    originalLanguage = originalLanguage,
+    popularity = popularity,
+    homepage = null,
+    imdbId = null,
+    credits = null,
+    videos = emptyList()
+)
+
+private fun TMDBSeriesListDto.toDomain() = TMDBSeriesData(
+    id = id,
+    name = name,
+    originalName = originalName,
+    overview = overview,
+    posterPath = TMDBApi.getImageUrl(posterPath, TMDBApi.POSTER_SIZE_W500),
+    backdropPath = TMDBApi.getImageUrl(backdropPath, TMDBApi.BACKDROP_SIZE_W1280),
+    firstAirDate = firstAirDate,
+    lastAirDate = lastAirDate,
+    voteAverage = voteAverage,
+    voteCount = voteCount,
+    genres = emptyList(), // No disponible en lista
+    productionCompanies = emptyList(),
+    productionCountries = emptyList(),
+    spokenLanguages = emptyList(),
+    adult = adult,
+    createdBy = emptyList(),
+    episodeRunTime = emptyList(),
+    inProduction = false, // Valor por defecto
+    numberOfEpisodes = 0, // Valor por defecto
+    numberOfSeasons = 0, // Valor por defecto
+    originalLanguage = originalLanguage,
+    popularity = popularity,
+    status = null,
+    tagline = null,
+    type = null,
+    homepage = null,
+    networks = emptyList(),
+    seasons = emptyList(),
+    credits = null,
+    videos = emptyList()
 )

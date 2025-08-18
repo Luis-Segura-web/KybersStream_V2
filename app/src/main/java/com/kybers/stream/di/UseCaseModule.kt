@@ -19,7 +19,14 @@ object UseCaseModule {
         enrichMoviesList: EnrichMoviesListUseCase,
         enrichSeriesList: EnrichSeriesListUseCase,
         getMovieDetails: GetMovieDetailsUseCase,
-        getSeriesDetails: GetSeriesDetailsUseCase
+        getSeriesDetails: GetSeriesDetailsUseCase,
+        getPopularMovies: GetPopularMoviesUseCase,
+        getTrendingMovies: GetTrendingMoviesUseCase,
+        getTopRatedMovies: GetTopRatedMoviesUseCase,
+        getPopularSeries: GetPopularSeriesUseCase,
+        getTrendingSeries: GetTrendingSeriesUseCase,
+        getTopRatedSeries: GetTopRatedSeriesUseCase,
+        getFilteredTMDBContent: GetFilteredTMDBContentUseCase
     ): TMDBUseCases {
         return TMDBUseCases(
             enrichMovie = enrichMovie,
@@ -27,7 +34,14 @@ object UseCaseModule {
             enrichMoviesList = enrichMoviesList,
             enrichSeriesList = enrichSeriesList,
             getMovieDetails = getMovieDetails,
-            getSeriesDetails = getSeriesDetails
+            getSeriesDetails = getSeriesDetails,
+            getPopularMovies = getPopularMovies,
+            getTrendingMovies = getTrendingMovies,
+            getTopRatedMovies = getTopRatedMovies,
+            getPopularSeries = getPopularSeries,
+            getTrendingSeries = getTrendingSeries,
+            getTopRatedSeries = getTopRatedSeries,
+            getFilteredTMDBContent = getFilteredTMDBContent
         )
     }
 }
