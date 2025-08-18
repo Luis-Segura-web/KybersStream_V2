@@ -394,6 +394,9 @@ fun PlayerOverlayControls(
                 playbackState = playbackState,
                 onTogglePlayPause = onTogglePlayPause,
                 onSeek = onSeek,
+                onPreviousChannel = null, // TODO: Implementar navegación de canales
+                onNextChannel = null, // TODO: Implementar navegación de canales
+                contentType = contentType,
                 modifier = Modifier
                     .align(Alignment.Center)
                     .alpha(alpha)
@@ -404,8 +407,11 @@ fun PlayerOverlayControls(
                 playbackState = playbackState,
                 currentMedia = currentMedia,
                 isTablet = isTablet,
+                contentType = contentType,
                 onSeek = onSeek,
                 onTogglePlayPause = onTogglePlayPause,
+                onPreviousChannel = null, // TODO: Implementar navegación de canales
+                onNextChannel = null, // TODO: Implementar navegación de canales
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .alpha(alpha)
@@ -427,15 +433,34 @@ fun PlayerTopControls(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Black.copy(alpha = 0.8f),
+                        Color.Transparent
+                    )
+                ),
+                shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.weight(1f)
         ) {
-            IconButton(onClick = onNavigateBack) {
+            IconButton(
+                onClick = onNavigateBack,
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        Color.Black.copy(alpha = 0.4f),
+                        CircleShape
+                    )
+            ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Volver",
@@ -444,13 +469,15 @@ fun PlayerTopControls(
                 )
             }
             
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 AdaptiveText(
                     text = currentMedia.title ?: "Reproduciendo",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 
@@ -467,39 +494,75 @@ fun PlayerTopControls(
         }
         
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             onShowPlaylist?.let {
-                IconButton(onClick = it) {
+                IconButton(
+                    onClick = it,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            Color.Black.copy(alpha = 0.4f),
+                            CircleShape
+                        )
+                ) {
                     Icon(
                         imageVector = Icons.Default.PlaylistPlay,
                         contentDescription = "Lista de reproducción",
-                        tint = Color.White
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
             
-            IconButton(onClick = onShowSubtitles) {
+            IconButton(
+                onClick = onShowSubtitles,
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        Color.Black.copy(alpha = 0.4f),
+                        CircleShape
+                    )
+            ) {
                 Icon(
                     imageVector = Icons.Default.Subtitles,
                     contentDescription = "Subtítulos",
-                    tint = Color.White
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
                 )
             }
             
-            IconButton(onClick = onShowQualitySelector) {
+            IconButton(
+                onClick = onShowQualitySelector,
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        Color.Black.copy(alpha = 0.4f),
+                        CircleShape
+                    )
+            ) {
                 Icon(
                     imageVector = Icons.Default.HighQuality,
                     contentDescription = "Calidad",
-                    tint = Color.White
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
                 )
             }
             
-            IconButton(onClick = onShowSettings) {
+            IconButton(
+                onClick = onShowSettings,
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        Color.Black.copy(alpha = 0.4f),
+                        CircleShape
+                    )
+            ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Configuración",
-                    tint = Color.White
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -511,6 +574,9 @@ fun PlayerCenterControls(
     playbackState: PlaybackState?,
     onTogglePlayPause: () -> Unit,
     onSeek: (Long) -> Unit,
+    onPreviousChannel: (() -> Unit)? = null,
+    onNextChannel: (() -> Unit)? = null,
+    contentType: ContentType,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -518,11 +584,15 @@ fun PlayerCenterControls(
         horizontalArrangement = Arrangement.spacedBy(24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Rewind 10s
+        // Previous/Rewind button
         IconButton(
             onClick = { 
-                playbackState?.currentPosition?.let { pos ->
-                    onSeek((pos - 10000).coerceAtLeast(0))
+                if (contentType == ContentType.LIVE_TV && onPreviousChannel != null) {
+                    onPreviousChannel()
+                } else {
+                    playbackState?.currentPosition?.let { pos ->
+                        onSeek((pos - 10000).coerceAtLeast(0))
+                    }
                 }
             },
             modifier = Modifier
@@ -533,8 +603,14 @@ fun PlayerCenterControls(
                 )
         ) {
             Icon(
-                imageVector = Icons.Default.Replay10,
-                contentDescription = "Retroceder 10 segundos",
+                imageVector = if (contentType == ContentType.LIVE_TV) 
+                    Icons.Default.SkipPrevious 
+                else 
+                    Icons.Default.Replay10,
+                contentDescription = if (contentType == ContentType.LIVE_TV) 
+                    "Canal anterior" 
+                else 
+                    "Retroceder 10 segundos",
                 tint = Color.White,
                 modifier = Modifier.size(28.dp)
             )
@@ -558,12 +634,16 @@ fun PlayerCenterControls(
             )
         }
         
-        // Forward 10s
+        // Next/Forward button
         IconButton(
             onClick = { 
-                playbackState?.let { state ->
-                    val newPos = (state.currentPosition + 10000).coerceAtMost(state.duration)
-                    onSeek(newPos)
+                if (contentType == ContentType.LIVE_TV && onNextChannel != null) {
+                    onNextChannel()
+                } else {
+                    playbackState?.let { state ->
+                        val newPos = (state.currentPosition + 10000).coerceAtMost(state.duration)
+                        onSeek(newPos)
+                    }
                 }
             },
             modifier = Modifier
@@ -574,8 +654,14 @@ fun PlayerCenterControls(
                 )
         ) {
             Icon(
-                imageVector = Icons.Default.Forward10,
-                contentDescription = "Avanzar 10 segundos",
+                imageVector = if (contentType == ContentType.LIVE_TV) 
+                    Icons.Default.SkipNext 
+                else 
+                    Icons.Default.Forward10,
+                contentDescription = if (contentType == ContentType.LIVE_TV) 
+                    "Canal siguiente" 
+                else 
+                    "Avanzar 10 segundos",
                 tint = Color.White,
                 modifier = Modifier.size(28.dp)
             )
@@ -588,43 +674,136 @@ fun PlayerBottomControls(
     playbackState: PlaybackState?,
     currentMedia: MediaInfo,
     isTablet: Boolean,
+    contentType: ContentType,
     onSeek: (Long) -> Unit,
     onTogglePlayPause: () -> Unit,
+    onPreviousChannel: (() -> Unit)? = null,
+    onNextChannel: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         playbackState?.let { state ->
-            // Progress bar
-            PlayerProgressBar(
-                currentPosition = state.currentPosition,
-                duration = state.duration,
-                bufferedPosition = state.bufferedPosition,
-                onSeek = onSeek,
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Time display
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                AdaptiveText(
-                    text = formatTime(state.currentPosition),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White
+            // Progress bar - solo para contenido VOD/Series
+            if (contentType != ContentType.LIVE_TV) {
+                PlayerProgressBar(
+                    currentPosition = state.currentPosition,
+                    duration = state.duration,
+                    bufferedPosition = state.bufferedPosition,
+                    onSeek = onSeek,
+                    modifier = Modifier.fillMaxWidth()
                 )
                 
-                AdaptiveText(
-                    text = formatTime(state.duration),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White
-                )
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Time display
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    AdaptiveText(
+                        text = formatTime(state.currentPosition),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White,
+                        modifier = Modifier
+                            .background(
+                                Color.Black.copy(alpha = 0.6f),
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                    
+                    AdaptiveText(
+                        text = formatTime(state.duration),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White,
+                        modifier = Modifier
+                            .background(
+                                Color.Black.copy(alpha = 0.6f),
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            } else {
+                // Para TV en vivo, mostrar controles de navegación de canales
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Botón canal anterior
+                    IconButton(
+                        onClick = { onPreviousChannel?.invoke() },
+                        enabled = onPreviousChannel != null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                Color.Black.copy(alpha = 0.6f),
+                                CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SkipPrevious,
+                            contentDescription = "Canal anterior",
+                            tint = if (onPreviousChannel != null) Color.White else Color.Gray,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    
+                    // Información del canal actual
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        AdaptiveText(
+                            text = "EN VIVO",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .background(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        AdaptiveText(
+                            text = currentMedia.title ?: "Canal",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    
+                    // Botón canal siguiente
+                    IconButton(
+                        onClick = { onNextChannel?.invoke() },
+                        enabled = onNextChannel != null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                Color.Black.copy(alpha = 0.6f),
+                                CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SkipNext,
+                            contentDescription = "Canal siguiente",
+                            tint = if (onNextChannel != null) Color.White else Color.Gray,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
         }
     }
@@ -642,14 +821,14 @@ fun PlayerProgressBar(
     val bufferedProgress = if (duration > 0) bufferedPosition.toFloat() / duration else 0f
     
     Box(
-        modifier = modifier.height(4.dp)
+        modifier = modifier.height(6.dp)
     ) {
-        // Background track
+        // Background track con mayor visibilidad
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(2.dp))
-                .background(Color.White.copy(alpha = 0.3f))
+                .clip(RoundedCornerShape(3.dp))
+                .background(Color.White.copy(alpha = 0.4f))
         )
         
         // Buffered progress
@@ -657,18 +836,19 @@ fun PlayerProgressBar(
             modifier = Modifier
                 .fillMaxWidth(bufferedProgress)
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(2.dp))
-                .background(Color.White.copy(alpha = 0.5f))
+                .clip(RoundedCornerShape(3.dp))
+                .background(Color.White.copy(alpha = 0.6f))
         )
         
-        // Current progress
+        // Current progress con mejor visibilidad para fullscreen
         Box(
             modifier = Modifier
                 .fillMaxWidth(progress)
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(2.dp))
+                .clip(RoundedCornerShape(3.dp))
                 .background(MaterialTheme.colorScheme.primary)
         )
+        
     }
 }
 

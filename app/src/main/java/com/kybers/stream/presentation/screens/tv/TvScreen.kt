@@ -11,11 +11,19 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -100,18 +108,6 @@ fun TvScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        // Chips de categorías rápidas
-        if (uiState.categories.isNotEmpty()) {
-            CategoryChipsSection(
-                categories = uiState.categories,
-                selectedCategory = selectedCategory,
-                onCategorySelected = { category ->
-                    selectedCategory = category
-                    viewModel.selectCategory(category)
-                },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-        }
 
         // Lista de canales
         when {
@@ -146,7 +142,7 @@ fun TvScreen(
                     channelsEpg = uiState.channelsEpg,
                     viewMode = uiState.viewMode,
                     isLoadingEpg = uiState.isLoadingEpg,
-                    currentPlayingId = currentMedia?.id,
+                    currentPlayingId = uiState.currentPlayingChannelId,
                     onChannelClick = { channel ->
                         viewModel.playChannel(channel)
                     },
@@ -275,50 +271,216 @@ fun PlayerSection(
 }
 
 @Composable
-fun CategoryChipsSection(
+fun ExpandableCategoriesSection(
     categories: List<com.kybers.stream.domain.model.Category>,
     selectedCategory: String,
     onCategorySelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyRow(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(horizontal = 4.dp)
+    var expandedCategories by remember { mutableStateOf(setOf<String>()) }
+    
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(max = 400.dp), // Limitar altura máxima
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        // Opción "Todas las categorías"
         item {
-            FilterChip(
-                onClick = { onCategorySelected("") },
-                label = { Text("Todos") },
-                selected = selectedCategory.isEmpty(),
-                leadingIcon = if (selectedCategory.isEmpty()) {
-                    {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                } else null
+            CategoryExpandableItem(
+                categoryName = "Todas las categorías",
+                isSelected = selectedCategory.isEmpty(),
+                isExpanded = false,
+                showChannels = false,
+                channels = emptyList(),
+                onCategoryClick = { onCategorySelected("") },
+                onToggleExpanded = { },
+                onChannelClick = { }
             )
         }
         
-        items(categories.take(8)) { category -> // Mostrar máximo 8 categorías
-            FilterChip(
-                onClick = { onCategorySelected(category.categoryName) },
-                label = { Text(category.categoryName) },
-                selected = selectedCategory == category.categoryName,
-                leadingIcon = if (selectedCategory == category.categoryName) {
-                    {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
+        // Categorías disponibles
+        items(categories) { category ->
+            val isExpanded = expandedCategories.contains(category.categoryId)
+            val isSelected = selectedCategory == category.categoryName
+            
+            CategoryExpandableItem(
+                categoryName = category.categoryName,
+                isSelected = isSelected,
+                isExpanded = isExpanded,
+                showChannels = isExpanded, // Mostrar canales cuando esté expandido
+                channels = emptyList(), // TODO: Obtener canales por categoría
+                onCategoryClick = { onCategorySelected(category.categoryName) },
+                onToggleExpanded = {
+                    expandedCategories = if (isExpanded) {
+                        expandedCategories - category.categoryId
+                    } else {
+                        expandedCategories + category.categoryId
                     }
-                } else null
+                },
+                onChannelClick = { /* TODO: Manejar clic en canal desde categoría */ }
             )
         }
+    }
+}
+
+@Composable
+fun CategoryExpandableItem(
+    categoryName: String,
+    isSelected: Boolean,
+    isExpanded: Boolean,
+    showChannels: Boolean,
+    channels: List<Channel>, // Lista de canales para esta categoría
+    onCategoryClick: () -> Unit,
+    onToggleExpanded: () -> Unit,
+    onChannelClick: (Channel) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(
+            durationMillis = 300,
+            easing = LinearOutSlowInEasing
+        ),
+        label = "expandIcon"
+    )
+    
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) 
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+            else 
+                MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(
+                    animationSpec = tween(
+                        durationMillis = 300,
+                        easing = LinearOutSlowInEasing
+                    )
+                )
+        ) {
+            // Encabezado de categoría
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onCategoryClick() }
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Indicador de selección
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Categoría seleccionada",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    
+                    // Nombre de la categoría
+                    Text(
+                        text = categoryName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = if (isSelected) 
+                            MaterialTheme.colorScheme.primary 
+                        else 
+                            MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                
+                // Botón de expansión solo si no es "Todas las categorías"
+                if (categoryName != "Todas las categorías") {
+                    IconButton(
+                        onClick = onToggleExpanded,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.KeyboardArrowDown,
+                            contentDescription = if (isExpanded) "Contraer" else "Expandir",
+                            modifier = Modifier
+                                .rotate(rotationAngle)
+                                .size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+            
+            // Lista de canales expandible
+            if (showChannels && channels.isNotEmpty()) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(channels) { channel ->
+                        CompactChannelItem(
+                            channel = channel,
+                            onClick = { onChannelClick(channel) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CompactChannelItem(
+    channel: Channel,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Logo del canal
+        AsyncImage(
+            model = channel.icon,
+            contentDescription = "Logo de ${channel.name}",
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(MaterialTheme.colorScheme.surface),
+            contentScale = ContentScale.Crop
+        )
+        
+        // Nombre del canal
+        Text(
+            text = channel.name,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        
+        // Icono de reproducción
+        Icon(
+            imageVector = Icons.Default.PlayArrow,
+            contentDescription = "Reproducir",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }
 
@@ -565,65 +727,24 @@ fun SearchAndFilterSection(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        // Barra de búsqueda y toggle de vista
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = onSearchQueryChange,
-                onSearch = onSearch,
-                placeholder = "Buscar canales...",
-                isLoading = isSearching,
-                modifier = Modifier.weight(1f)
-            )
-            
-            ViewModeToggle(
-                currentMode = viewMode,
-                onModeChange = onViewModeChange
-            )
-        }
+        // Barra de búsqueda
+        SearchBar(
+            query = searchQuery,
+            onQueryChange = onSearchQueryChange,
+            onSearch = onSearch,
+            placeholder = "Buscar canales...",
+            isLoading = isSearching,
+            modifier = Modifier.fillMaxWidth()
+        )
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
-        // Selector de categorías
-        ExposedDropdownMenuBox(
-            expanded = showCategoryDropdown,
-            onExpandedChange = onShowCategoryDropdown
-        ) {
-            OutlinedTextField(
-                value = selectedCategory.ifEmpty { "Todas las categorías" },
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = {
-                    Icon(Icons.Outlined.ExpandMore, contentDescription = "Expandir")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-            
-            ExposedDropdownMenu(
-                expanded = showCategoryDropdown,
-                onDismissRequest = { onShowCategoryDropdown(false) }
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Todas las categorías") },
-                    onClick = {
-                        onCategorySelected("")
-                    }
-                )
-                categories.forEach { category ->
-                    DropdownMenuItem(
-                        text = { Text(category.categoryName) },
-                        onClick = {
-                            onCategorySelected(category.categoryName)
-                        }
-                    )
-                }
-            }
-        }
+        // Sección mejorada de categorías expandibles
+        ExpandableCategoriesSection(
+            categories = categories,
+            selectedCategory = selectedCategory,
+            onCategorySelected = onCategorySelected
+        )
     }
 }
 
@@ -704,21 +825,31 @@ fun ChannelItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isCurrentlyPlaying) 6.dp else 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCurrentlyPlaying) 
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            else 
+                MaterialTheme.colorScheme.surface
+        ),
+        border = if (isCurrentlyPlaying) 
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        else 
+            null
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
-            // Logo del canal
+            // Logo del canal - cambio a cuadrado según especificaciones
             AsyncImage(
                 model = channel.icon,
                 contentDescription = "Logo de ${channel.name}",
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
+                    .size(56.dp) // Tamaño aumentado para mejor visibilidad
+                    .clip(RoundedCornerShape(8.dp)) // Esquinas redondeadas en lugar de círculo
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentScale = ContentScale.Crop
             )
@@ -729,16 +860,22 @@ fun ChannelItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // Nombre del canal
+                // Nombre del canal - permitir hasta 4 líneas
                 Text(
                     text = channel.name,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    fontWeight = if (isCurrentlyPlaying) FontWeight.Bold else FontWeight.SemiBold,
+                    maxLines = 4, // Permitir hasta 4 líneas según especificación
+                    overflow = TextOverflow.Ellipsis,
+                    color = if (isCurrentlyPlaying) 
+                        MaterialTheme.colorScheme.primary 
+                    else 
+                        MaterialTheme.colorScheme.onSurface
                 )
                 
-                // EPG real o placeholder
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                // EPG mejorado con mejor formateo
                 when {
                     isLoadingEpg -> {
                         EpgLoadingPlaceholder()
@@ -746,12 +883,14 @@ fun ChannelItem(
                     channelEpg != null -> {
                         EpgNowNextDisplay(
                             channelEpg = channelEpg,
-                            use24HourFormat = true // TODO: Get from preferences
+                            use24HourFormat = true
                         )
                     }
                     else -> {
-                        EpgErrorDisplay(
-                            onRetry = onRefreshEpg
+                        Text(
+                            text = "Sin información de EPG",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                     }
                 }
@@ -759,12 +898,14 @@ fun ChannelItem(
             
             // Botón de favorito
             IconButton(
-                onClick = onFavoriteClick
+                onClick = onFavoriteClick,
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    imageVector = if (false) Icons.Default.Favorite else Icons.Default.FavoriteBorder, // TODO: manejar favoritos
-                    contentDescription = "Favorito",
-                    tint = if (false) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
+                    imageVector = if (false) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (false) "Quitar de favoritos" else "Agregar a favoritos",
+                    tint = if (false) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

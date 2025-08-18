@@ -31,7 +31,9 @@ data class TvUiState(
     val error: String? = null,
     val channelsEpg: Map<String, ChannelEpg> = emptyMap(),
     val isLoadingEpg: Boolean = false,
-    val epgError: String? = null
+    val epgError: String? = null,
+    val currentPlayingChannelId: String? = null,
+    val currentPlayingCategoryName: String? = null
 )
 
 @HiltViewModel
@@ -214,6 +216,14 @@ class TvViewModel @Inject constructor(
                 // Implementar regla de una sola conexión
                 playbackManager.switchMedia(mediaInfo)
                 playbackManager.play()
+                
+                // Actualizar canal y categoría actualmente reproduciendo
+                _uiState.update { 
+                    it.copy(
+                        currentPlayingChannelId = channel.streamId,
+                        currentPlayingCategoryName = channel.categoryName ?: ""
+                    ) 
+                }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "Error al reproducir canal: ${e.message}") }
             }
@@ -285,6 +295,13 @@ class TvViewModel @Inject constructor(
 
     fun stopPlayback() {
         playbackManager.stop()
+        // Limpiar canal actual cuando se detiene
+        _uiState.update { 
+            it.copy(
+                currentPlayingChannelId = null,
+                currentPlayingCategoryName = null
+            ) 
+        }
     }
 
     fun pausePlayback() {
