@@ -8,7 +8,6 @@ import com.kybers.stream.domain.model.*
 import com.kybers.stream.domain.usecase.favorites.GetFavoritesUseCase
 import com.kybers.stream.domain.usecase.playback.GetContinueWatchingUseCase
 import com.kybers.stream.domain.usecase.TMDBUseCases
-import com.kybers.stream.domain.repository.DiscoveryRepository
 import com.kybers.stream.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -23,6 +22,7 @@ data class HomeUiState(
     val recentSeries: List<Series> = emptyList(),
     val recentContent: List<Any> = emptyList(),
     val tmdbFilteredContent: TMDBFilteredContent? = null,
+    val tmdbContent: TMDBContent = TMDBContent(),
     val isLoadingTMDB: Boolean = false,
     val tmdbError: String? = null,
     val error: String? = null
@@ -32,7 +32,6 @@ data class HomeUiState(
 class HomeViewModel @Inject constructor(
     private val getFavoritesUseCase: GetFavoritesUseCase,
     private val getContinueWatchingUseCase: GetContinueWatchingUseCase,
-    private val discoveryRepository: DiscoveryRepository,
     private val databaseCacheManager: DatabaseCacheManager,
     private val syncManager: SyncManager,
     private val tmdbUseCases: TMDBUseCases,
@@ -42,16 +41,8 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    val discoveryData: StateFlow<DiscoveryData> = discoveryRepository.getDiscoveryDataFlow()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = DiscoveryData(emptyList(), isLoading = true)
-        )
-
     init {
         loadHomeData()
-        refreshDiscovery()
         loadRecentContent()
         loadTMDBContent()
     }
@@ -90,63 +81,6 @@ class HomeViewModel @Inject constructor(
         loadHomeData()
         loadRecentContent()
         loadTMDBContent()
-    }
-
-    fun refreshDiscovery() {
-        viewModelScope.launch {
-            try {
-                discoveryRepository.refreshDiscoveryData()
-            } catch (e: Exception) {
-                // Error handling - could emit to a shared error state if needed
-            }
-        }
-    }
-
-    fun onContentItemClick(item: ContentItem) {
-        when (item) {
-            is ContentItem.MovieItem -> {
-                // TODO: Navigate to movie detail screen
-                // navigationController.navigate("movie_detail/${item.id}")
-            }
-            is ContentItem.SeriesItem -> {
-                // TODO: Navigate to series detail screen
-                // navigationController.navigate("series_detail/${item.id}")
-            }
-            is ContentItem.EpisodeItem -> {
-                // TODO: Navigate to episode detail or start playback
-                // navigationController.navigate("episode_detail/${item.id}")
-            }
-            is ContentItem.ContinueWatchingItem -> {
-                // TODO: Resume playback from saved position
-                // playerManager.resumePlayback(item.id, item.progress.positionMs)
-            }
-        }
-    }
-
-    fun onContentPlayClick(item: ContentItem) {
-        when (item) {
-            is ContentItem.MovieItem -> {
-                // TODO: Start movie playback
-                // playerManager.playMovie(item.id)
-            }
-            is ContentItem.SeriesItem -> {
-                // TODO: Play first episode or last watched episode
-                // playerManager.playSeriesFromBeginning(item.id)
-            }
-            is ContentItem.EpisodeItem -> {
-                // TODO: Start episode playback
-                // playerManager.playEpisode(item.id)
-            }
-            is ContentItem.ContinueWatchingItem -> {
-                // Resume from current position
-                // playerManager.resumePlayback(item.id, item.progress.positionMs)
-            }
-        }
-    }
-
-    fun onCategoryClick(categoryId: String) {
-        // TODO: Navigate to category view
-        // navigationController.navigate("category/$categoryId")
     }
     
     private fun loadRecentContent() {
@@ -214,13 +148,28 @@ class HomeViewModel @Inject constructor(
                 // Obtener contenido TMDB filtrado con el disponible en Xtream
                 tmdbUseCases.getFilteredTMDBContent(userHash)
                     .onSuccess { filteredContent ->
-                        _uiState.update { currentState ->
-                            currentState.copy(
-                                isLoadingTMDB = false,
-                                tmdbFilteredContent = filteredContent,
-                                tmdbError = null
-                            )
-                        }
+                        // También obtener contenido TMDB completo para el HeroCarousel
+                        tmdbUseCases.getAllTMDBContent()
+                            .onSuccess { tmdbContent ->
+                                _uiState.update { currentState ->
+                                    currentState.copy(
+                                        isLoadingTMDB = false,
+                                        tmdbFilteredContent = filteredContent,
+                                        tmdbContent = tmdbContent,
+                                        tmdbError = null
+                                    )
+                                }
+                            }
+                            .onFailure { error ->
+                                // Si falla obtener contenido completo, al menos usar el filtrado
+                                _uiState.update { currentState ->
+                                    currentState.copy(
+                                        isLoadingTMDB = false,
+                                        tmdbFilteredContent = filteredContent,
+                                        tmdbError = null
+                                    )
+                                }
+                            }
                     }
                     .onFailure { error ->
                         _uiState.update { currentState ->

@@ -1,5 +1,7 @@
 package com.kybers.stream.domain.model
 
+import com.kybers.stream.domain.model.ContentItem
+
 data class EnrichedMovie(
     // Datos básicos de Xtream
     val streamId: String,
@@ -209,3 +211,18 @@ data class EnrichedTMDBSeries(
     val tmdbData: TMDBSeriesData,
     val xtreamSeries: Series
 )
+
+// Contenedor para todo el contenido TMDB disponible
+data class TMDBContent(
+    val allContent: List<ContentItem> = emptyList(),
+    val popularMovies: List<TMDBMovieData> = emptyList(),
+    val trendingMovies: List<TMDBMovieData> = emptyList(),
+    val topRatedMovies: List<TMDBMovieData> = emptyList(),
+    val popularSeries: List<TMDBSeriesData> = emptyList(),
+    val trendingSeries: List<TMDBSeriesData> = emptyList(),
+    val topRatedSeries: List<TMDBSeriesData> = emptyList()
+) {
+    val hasContent: Boolean get() = allContent.isNotEmpty() ||
+        popularMovies.isNotEmpty() || trendingMovies.isNotEmpty() || topRatedMovies.isNotEmpty() ||
+        popularSeries.isNotEmpty() || trendingSeries.isNotEmpty() || topRatedSeries.isNotEmpty()
+}

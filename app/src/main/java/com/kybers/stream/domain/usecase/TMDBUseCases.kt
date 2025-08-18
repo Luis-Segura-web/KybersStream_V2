@@ -18,7 +18,8 @@ data class TMDBUseCases(
     val getPopularSeries: GetPopularSeriesUseCase,
     val getTrendingSeries: GetTrendingSeriesUseCase,
     val getTopRatedSeries: GetTopRatedSeriesUseCase,
-    val getFilteredTMDBContent: GetFilteredTMDBContentUseCase
+    val getFilteredTMDBContent: GetFilteredTMDBContentUseCase,
+    val getAllTMDBContent: GetAllTMDBContentUseCase
 )
 
 class EnrichMovieUseCase @Inject constructor(
@@ -187,6 +188,78 @@ class GetFilteredTMDBContentUseCase @Inject constructor(
                     xtreamSeries = xtreamSeries
                 )
             }
+        }
+    }
+}
+
+// Use Case para obtener todo el contenido TMDB combinado
+class GetAllTMDBContentUseCase @Inject constructor(
+    private val tmdbRepository: TMDBRepository
+) {
+    suspend operator fun invoke(): Result<TMDBContent> {
+        return try {
+            // Obtener todo el contenido de TMDB
+            val popularMoviesResult = tmdbRepository.getPopularMovies()
+            val trendingMoviesResult = tmdbRepository.getTrendingMovies()
+            val topRatedMoviesResult = tmdbRepository.getTopRatedMovies()
+            val popularSeriesResult = tmdbRepository.getPopularSeries()
+            val trendingSeriesResult = tmdbRepository.getTrendingSeries()
+            val topRatedSeriesResult = tmdbRepository.getTopRatedSeries()
+
+            // Crear lista de ContentItem combinando todo el contenido
+            val allContentItems = mutableListOf<ContentItem>()
+            
+            // Agregar películas populares
+            popularMoviesResult.getOrNull()?.take(10)?.forEach { movie ->
+                allContentItems.add(
+                    ContentItem.MovieItem(
+                        id = movie.id.toString(),
+                        title = movie.title,
+                        posterUrl = movie.posterPath,
+                        backdropUrl = movie.backdropPath,
+                        year = movie.releaseDate?.take(4),
+                        rating = String.format("%.1f", movie.voteAverage),
+                        genre = movie.genres.firstOrNull()?.name,
+                        quality = "HD",
+                        duration = movie.runtime?.let { "${it}min" },
+                        plot = movie.overview
+                    )
+                )
+            }
+            
+            // Agregar series populares
+            popularSeriesResult.getOrNull()?.take(10)?.forEach { series ->
+                allContentItems.add(
+                    ContentItem.SeriesItem(
+                        id = series.id.toString(),
+                        title = series.name,
+                        posterUrl = series.posterPath,
+                        backdropUrl = series.backdropPath,
+                        year = series.firstAirDate?.take(4),
+                        rating = String.format("%.1f", series.voteAverage),
+                        genre = series.genres.firstOrNull()?.name,
+                        quality = "HD",
+                        totalSeasons = series.numberOfSeasons,
+                        totalEpisodes = series.numberOfEpisodes,
+                        status = series.status,
+                        plot = series.overview
+                    )
+                )
+            }
+
+            val tmdbContent = TMDBContent(
+                allContent = allContentItems,
+                popularMovies = popularMoviesResult.getOrNull() ?: emptyList(),
+                trendingMovies = trendingMoviesResult.getOrNull() ?: emptyList(),
+                topRatedMovies = topRatedMoviesResult.getOrNull() ?: emptyList(),
+                popularSeries = popularSeriesResult.getOrNull() ?: emptyList(),
+                trendingSeries = trendingSeriesResult.getOrNull() ?: emptyList(),
+                topRatedSeries = topRatedSeriesResult.getOrNull() ?: emptyList()
+            )
+
+            Result.success(tmdbContent)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

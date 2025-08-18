@@ -1,5 +1,7 @@
 package com.kybers.stream.presentation.screens.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -205,14 +207,8 @@ fun HomeTabContent(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val discoveryData by viewModel.discoveryData.collectAsStateWithLifecycle()
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
-    
-    // Compute heroItems from the first non-empty carousel
-    val heroItems = remember(discoveryData) {
-        discoveryData.sections.firstOrNull()?.carousels?.firstOrNull { !it.isEmpty }?.items?.take(5) ?: emptyList()
-    }
     
     LazyColumn(
         modifier = Modifier
@@ -221,54 +217,70 @@ fun HomeTabContent(
         verticalArrangement = Arrangement.spacedBy(if (isTablet) 32.dp else 24.dp),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
-        // Hero Carousel - Banner principal
+        // Hero Carousel - Banner principal con datos TMDB (solo películas de Xtream disponibles)
         item {
-            HeroCarousel(
-                items = heroItems,
-                isLoading = discoveryData.isLoading,
-                onItemClick = { item -> viewModel.onContentItemClick(item) },
-                onPlayClick = { item -> viewModel.onContentPlayClick(item) },
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            AnimatedVisibility(
+                visible = uiState.tmdbFilteredContent?.hasContent == true,
+                enter = fadeIn(animationSpec = tween(300))
+            ) {
+                val heroItems = uiState.tmdbFilteredContent?.let { tmdbContent ->
+                    // Solo usar películas populares y trending de TMDB que están disponibles en Xtream
+                    val topMovies = (tmdbContent.popularMovies.take(3) + tmdbContent.trendingMovies.take(2))
+                        .distinctBy { it.xtreamMovie.streamId }
+                        .take(5)
+                        .map { 
+                            ContentItem.MovieItem(
+                                id = it.xtreamMovie.streamId,
+                                title = it.xtreamMovie.name.removeXtreamSuffix(), // Usar nombre de Xtream sin "(Xtream)"
+                                posterUrl = it.tmdbData.posterPath ?: it.xtreamMovie.icon,
+                                backdropUrl = it.tmdbData.backdropPath,
+                                year = it.tmdbData.releaseDate?.take(4),
+                                rating = String.format("%.1f", it.tmdbData.voteAverage),
+                                genre = it.tmdbData.genres.firstOrNull()?.name,
+                                quality = "HD",
+                                duration = it.tmdbData.runtime?.let { runtime -> "${runtime}min" },
+                                plot = it.tmdbData.overview ?: it.xtreamMovie.plot
+                            )
+                        }
+                    topMovies
+                } ?: emptyList()
+                
+                HeroCarousel(
+                    items = heroItems,
+                    isLoading = false,
+                    onItemClick = { item -> 
+                        when (item.contentType) {
+                            ContentType.VOD -> onNavigateToMovieDetail(item.id)
+                            ContentType.SERIES -> onNavigateToSeriesDetail(item.id)
+                            ContentType.EPISODE -> onNavigateToSeriesDetail(item.id)
+                            ContentType.LIVE_TV -> onNavigateToSeriesDetail(item.id)
+                        }
+                    },
+                    onPlayClick = { item -> 
+                        when (item.contentType) {
+                            ContentType.VOD -> onNavigateToMovieDetail(item.id)
+                            ContentType.SERIES -> onNavigateToSeriesDetail(item.id)
+                            ContentType.EPISODE -> onNavigateToSeriesDetail(item.id)
+                            ContentType.LIVE_TV -> onNavigateToSeriesDetail(item.id)
+                        }
+                    },
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
         }
         
-        // Secciones dinámicas
-        when {
-            discoveryData.isLoading -> {
-                items(3) { index ->
-                    SkeletonContentSection(
-                        title = when (index) {
-                            0 -> "Continuar viendo"
-                            1 -> "Recomendado para ti"
-                            else -> "Agregados recientemente"
-                        }
-                    )
-                }
+        // Secciones de contenido TMDB
+        // Continuar viendo (solo si hay progreso)
+        if (uiState.continueWatching.isNotEmpty()) {
+            item {
+                ContinueWatchingSection(
+                    items = uiState.continueWatching,
+                    onItemClick = { item -> /* TODO: Handle PlaybackProgress click */ },
+                    onPlayClick = { item -> /* TODO: Handle PlaybackProgress play */ },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
-            
-            discoveryData.error != null -> {
-                item {
-                    ErrorStateCard(
-                        title = "Error al cargar contenido",
-                        message = discoveryData.error!!,
-                        onRetry = { viewModel.refreshDiscovery() },
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                }
-            }
-            
-            discoveryData.hasContent -> {
-                // Continuar viendo (solo si hay progreso)
-                if (uiState.continueWatching.isNotEmpty()) {
-                    item {
-                        ContinueWatchingSection(
-                            items = uiState.continueWatching,
-                            onItemClick = { item -> /* TODO: Handle PlaybackProgress click */ },
-                            onPlayClick = { item -> /* TODO: Handle PlaybackProgress play */ },
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                    }
-                }
+        }
                 
                 // Favoritos (solo si hay favoritos)
                 if (uiState.favorites.isNotEmpty()) {
@@ -427,40 +439,6 @@ fun HomeTabContent(
                         )
                     }
                 }
-                
-                // Carruseles de contenido por categoría (legacy)
-                discoveryData.sections.forEach { section ->
-                    section.carousels.forEach { carousel ->
-                        item(key = carousel.id) {
-                            ContentHorizontalSection(
-                                title = carousel.title,
-                                items = carousel.items,
-                                onItemClick = { item -> viewModel.onContentItemClick(item) },
-                                onPlayClick = { item -> viewModel.onContentPlayClick(item) },
-                                onMoreClick = { 
-                                    // TODO: Navigate to full category view
-                                    viewModel.onCategoryClick(carousel.id)
-                                },
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                        }
-                    }
-                }
-            }
-            
-            else -> {
-                item {
-                    EmptyStateCard(
-                        title = "Bienvenido a KybersStream",
-                        message = "Comienza explorando el contenido disponible en TV, Películas y Series",
-                        icon = Icons.Default.VideoLibrary,
-                        actionText = "Explorar contenido",
-                        onActionClick = { /* TODO: Navigate to first tab with content */ },
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                }
-            }
-        }
         
         // Información adicional al final
         item {
@@ -574,26 +552,36 @@ fun HeroCarouselItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Box {
-            // Imagen de fondo (placeholder)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f)
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Movie,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = Color.White.copy(alpha = 0.8f)
+            // Imagen de fondo con backdrop o poster de TMDB
+            if (!item.backdropUrl.isNullOrEmpty() || !item.posterUrl.isNullOrEmpty()) {
+                AsyncImage(
+                    model = item.backdropUrl ?: item.posterUrl,
+                    contentDescription = item.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
+            } else {
+                // Placeholder con gradiente
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Movie,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = Color.White.copy(alpha = 0.8f)
+                    )
+                }
             }
             
             // Overlay con gradiente
@@ -620,19 +608,94 @@ fun HeroCarouselItem(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 AdaptiveText(
-                    text = "Contenido Destacado", // TODO: Get from item
+                    text = item.title, // Usar el título del item (nombre de Xtream sin "(Xtream)")
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2
                 )
                 
-                AdaptiveText(
-                    text = "Disfruta del mejor contenido de entretenimiento", // TODO: Get from item
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.9f),
-                    maxLines = 3
-                )
+                // Mostrar información adicional si está disponible
+                val plotText = when (item) {
+                    is ContentItem.MovieItem -> item.plot
+                    is ContentItem.SeriesItem -> item.plot
+                    else -> null
+                }
+                
+                if (!plotText.isNullOrEmpty()) {
+                    AdaptiveText(
+                        text = plotText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.9f),
+                        maxLines = 3
+                    )
+                } else {
+                    AdaptiveText(
+                        text = "Disfruta del mejor contenido de entretenimiento disponible",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.9f),
+                        maxLines = 3
+                    )
+                }
+                
+                // Metadata del contenido
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val itemYear = item.year
+                    val itemGenre = item.genre
+                    val itemRating = item.rating
+                    
+                    if (!itemYear.isNullOrEmpty()) {
+                        Text(
+                            text = itemYear,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+                    
+                    if (!itemGenre.isNullOrEmpty()) {
+                        if (!itemYear.isNullOrEmpty()) {
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.6f)
+                            )
+                        }
+                        Text(
+                            text = itemGenre,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+                    
+                    if (!itemRating.isNullOrEmpty()) {
+                        if (!itemYear.isNullOrEmpty() || !itemGenre.isNullOrEmpty()) {
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.6f)
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = Color(0xFFFFD700)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = itemRating,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
                 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -662,133 +725,6 @@ fun HeroCarouselItem(
                         Text("Más info")
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun ContentHorizontalSection(
-    title: String,
-    items: List<ContentItem>,
-    onItemClick: (ContentItem) -> Unit,
-    onPlayClick: (ContentItem) -> Unit,
-    onMoreClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AdaptiveText(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-            
-            TextButton(onClick = onMoreClick) {
-                Text("Ver todo")
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
-        ) {
-            items(items.take(10)) { item -> // Limitar a 10 items por sección
-                ContentPosterCard(
-                    item = item,
-                    onItemClick = { onItemClick(item) },
-                    onPlayClick = { onPlayClick(item) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ContentPosterCard(
-    item: ContentItem,
-    onItemClick: () -> Unit,
-    onPlayClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onItemClick,
-        modifier = modifier
-            .width(160.dp)
-            .height(240.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Box {
-            // Poster placeholder
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Movie,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            
-            // Play button overlay
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.6f))
-                    .clickable { onPlayClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Reproducir",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            
-            // Título en la parte inferior
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.8f)
-                            )
-                        )
-                    )
-                    .padding(12.dp)
-            ) {
-                AdaptiveText(
-                    text = "Título del Contenido", // TODO: Get from item
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White,
-                    maxLines = 2,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
     }
@@ -1244,8 +1180,8 @@ fun XtreamMovieCard(
     Card(
         onClick = onClick,
         modifier = modifier
-            .width(160.dp)
-            .height(240.dp),
+            .width(160.dp)  // Tamaño uniforme para todas las portadas
+            .height(240.dp), // Tamaño uniforme para todas las portadas
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -1260,7 +1196,7 @@ fun XtreamMovieCard(
                 if (!movie.icon.isNullOrEmpty()) {
                     AsyncImage(
                         model = movie.icon,
-                        contentDescription = movie.name,
+                        contentDescription = movie.name.removeXtreamSuffix(), // Sin "(Xtream)"
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -1309,7 +1245,7 @@ fun XtreamMovieCard(
             ) {
                 Column {
                     Text(
-                        text = movie.name,
+                        text = movie.name.removeXtreamSuffix(), // Usar nombre de Xtream sin "(Xtream)"
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
@@ -1352,8 +1288,8 @@ fun XtreamSeriesCard(
     Card(
         onClick = onClick,
         modifier = modifier
-            .width(160.dp)
-            .height(240.dp),
+            .width(160.dp)  // Tamaño uniforme para todas las portadas
+            .height(240.dp), // Tamaño uniforme para todas las portadas
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -1368,7 +1304,7 @@ fun XtreamSeriesCard(
                 if (!series.cover.isNullOrEmpty()) {
                     AsyncImage(
                         model = series.cover,
-                        contentDescription = series.name,
+                        contentDescription = series.name.removeXtreamSuffix(), // Sin "(Xtream)"
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -1417,7 +1353,7 @@ fun XtreamSeriesCard(
             ) {
                 Column {
                     Text(
-                        text = series.name,
+                        text = series.name.removeXtreamSuffix(), // Usar nombre de Xtream sin "(Xtream)"
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
@@ -1557,17 +1493,17 @@ fun TMDBMovieCard(
     Card(
         onClick = onClick,
         modifier = modifier
-            .width(140.dp)
-            .height(230.dp),
+            .width(160.dp)  // Tamaño uniforme para todas las portadas
+            .height(240.dp), // Tamaño uniforme para todas las portadas
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Imagen de fondo
+            // Imagen de fondo - usar poster de TMDB o icono de Xtream como fallback
             AsyncImage(
-                model = movie.tmdbData.posterPath,
-                contentDescription = "Poster de ${movie.tmdbData.title}",
+                model = movie.tmdbData.posterPath ?: movie.xtreamMovie.icon,
+                contentDescription = "Poster de ${movie.xtreamMovie.name.removeXtreamSuffix()}",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -1589,14 +1525,14 @@ fun TMDBMovieCard(
                     )
             )
             
-            // Información superpuesta
+            // Información superpuesta - usar nombre de Xtream
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(8.dp)
             ) {
                 Text(
-                    text = movie.tmdbData.title,
+                    text = movie.xtreamMovie.name.removeXtreamSuffix(), // Usar nombre de Xtream sin "(Xtream)"
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -1642,24 +1578,22 @@ fun TMDBMovieCard(
             }
             
             // Badge de disponibilidad si viene de Xtream
-            if (movie.xtreamMovie != null) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(4.dp)
-                        )
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = "✓",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(4.dp)
                     )
-                }
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "✓",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -1674,17 +1608,17 @@ fun TMDBSeriesCard(
     Card(
         onClick = onClick,
         modifier = modifier
-            .width(140.dp)
-            .height(230.dp),
+            .width(160.dp)  // Tamaño uniforme para todas las portadas
+            .height(240.dp), // Tamaño uniforme para todas las portadas
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Imagen de fondo
+            // Imagen de fondo - usar poster de TMDB o cover de Xtream como fallback
             AsyncImage(
-                model = series.tmdbData.posterPath,
-                contentDescription = "Poster de ${series.tmdbData.name}",
+                model = series.tmdbData.posterPath ?: series.xtreamSeries.cover,
+                contentDescription = "Poster de ${series.xtreamSeries.name.removeXtreamSuffix()}",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -1706,14 +1640,14 @@ fun TMDBSeriesCard(
                     )
             )
             
-            // Información superpuesta
+            // Información superpuesta - usar nombre de Xtream
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(8.dp)
             ) {
                 Text(
-                    text = series.tmdbData.name,
+                    text = series.xtreamSeries.name.removeXtreamSuffix(), // Usar nombre de Xtream sin "(Xtream)"
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -1759,25 +1693,49 @@ fun TMDBSeriesCard(
             }
             
             // Badge de disponibilidad si viene de Xtream
-            if (series.xtreamSeries != null) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(4.dp)
-                        )
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = "✓",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(4.dp)
                     )
-                }
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = "✓",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
+}
+
+private fun getServiceNamesString(services: List<String>): String {
+    return services.joinToString(", ") { service ->
+        when (service.lowercase()) {
+            "netflix" -> "Netflix"
+            "disney+" -> "Disney+"
+            "hbo max" -> "HBO Max"
+            "amazon prime video" -> "Prime Video"
+            "hulu" -> "Hulu"
+            "apple tv+" -> "Apple TV+"
+            "paramount+" -> "Paramount+"
+            "peacock" -> "Peacock"
+            "showtime" -> "Showtime"
+            "starz" -> "Starz"
+            else -> service
+        }
+    }
+}
+
+// Función para remover "(Xtream)" y variaciones del sufijo de los nombres
+private fun String.removeXtreamSuffix(): String {
+    return this.replace(Regex("\\s*\\(Xtream\\)\\s*$", RegexOption.IGNORE_CASE), "")
+        .replace(Regex("\\s*\\[Xtream\\]\\s*$", RegexOption.IGNORE_CASE), "")
+        .replace(Regex("\\s*-\\s*Xtream\\s*$", RegexOption.IGNORE_CASE), "")
+        .trim()
 }

@@ -26,7 +26,8 @@ object UseCaseModule {
         getPopularSeries: GetPopularSeriesUseCase,
         getTrendingSeries: GetTrendingSeriesUseCase,
         getTopRatedSeries: GetTopRatedSeriesUseCase,
-        getFilteredTMDBContent: GetFilteredTMDBContentUseCase
+        getFilteredTMDBContent: GetFilteredTMDBContentUseCase,
+        getAllTMDBContent: GetAllTMDBContentUseCase
     ): TMDBUseCases {
         return TMDBUseCases(
             enrichMovie = enrichMovie,
@@ -41,7 +42,8 @@ object UseCaseModule {
             getPopularSeries = getPopularSeries,
             getTrendingSeries = getTrendingSeries,
             getTopRatedSeries = getTopRatedSeries,
-            getFilteredTMDBContent = getFilteredTMDBContent
+            getFilteredTMDBContent = getFilteredTMDBContent,
+            getAllTMDBContent = getAllTMDBContent
         )
     }
 }
