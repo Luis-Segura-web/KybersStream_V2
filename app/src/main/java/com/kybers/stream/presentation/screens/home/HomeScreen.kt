@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
@@ -15,14 +16,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.animateContentSize
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +37,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -209,13 +217,34 @@ fun HomeTabContent(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 600
+    val hapticFeedback = LocalHapticFeedback.current
+    
+    // Memoizar callbacks para evitar recomposiciones innecesarias
+    val onMovieClick = remember(onNavigateToMovieDetail, hapticFeedback) {
+        { movieId: String ->
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onNavigateToMovieDetail(movieId)
+        }
+    }
+    
+    val onSeriesClick = remember(onNavigateToSeriesDetail, hapticFeedback) {
+        { seriesId: String ->
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onNavigateToSeriesDetail(seriesId)
+        }
+    }
     
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .semantics { contentDescription = "Pantalla principal con contenido recomendado" },
         verticalArrangement = Arrangement.spacedBy(if (isTablet) 32.dp else 24.dp),
-        contentPadding = PaddingValues(bottom = 16.dp)
+        contentPadding = PaddingValues(
+            start = 0.dp,
+            end = 0.dp,
+            top = if (isTablet) 16.dp else 8.dp,
+            bottom = if (isTablet) 32.dp else 24.dp
+        )
     ) {
         // Hero Carousel - Banner principal con datos TMDB (solo películas de Xtream disponibles)
         item {
@@ -250,21 +279,21 @@ fun HomeTabContent(
                     isLoading = false,
                     onItemClick = { item -> 
                         when (item.contentType) {
-                            ContentType.VOD -> onNavigateToMovieDetail(item.id)
-                            ContentType.SERIES -> onNavigateToSeriesDetail(item.id)
-                            ContentType.EPISODE -> onNavigateToSeriesDetail(item.id)
-                            ContentType.LIVE_TV -> onNavigateToSeriesDetail(item.id)
+                            ContentType.VOD -> onMovieClick(item.id)
+                            ContentType.SERIES -> onSeriesClick(item.id)
+                            ContentType.EPISODE -> onSeriesClick(item.id)
+                            ContentType.LIVE_TV -> onSeriesClick(item.id)
                         }
                     },
                     onPlayClick = { item -> 
                         when (item.contentType) {
-                            ContentType.VOD -> onNavigateToMovieDetail(item.id)
-                            ContentType.SERIES -> onNavigateToSeriesDetail(item.id)
-                            ContentType.EPISODE -> onNavigateToSeriesDetail(item.id)
-                            ContentType.LIVE_TV -> onNavigateToSeriesDetail(item.id)
+                            ContentType.VOD -> onMovieClick(item.id)
+                            ContentType.SERIES -> onSeriesClick(item.id)
+                            ContentType.EPISODE -> onSeriesClick(item.id)
+                            ContentType.LIVE_TV -> onSeriesClick(item.id)
                         }
                     },
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = if (isTablet) 16.dp else 8.dp)
                 )
             }
         }
@@ -277,7 +306,8 @@ fun HomeTabContent(
                     items = uiState.continueWatching,
                     onItemClick = { item -> /* TODO: Handle PlaybackProgress click */ },
                     onPlayClick = { item -> /* TODO: Handle PlaybackProgress play */ },
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    isTablet = isTablet,
+                    modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                 )
             }
         }
@@ -289,7 +319,8 @@ fun HomeTabContent(
                             favorites = uiState.favorites,
                             onFavoriteClick = { item -> /* TODO: Handle FavoriteItem click */ },
                             onPlayClick = { item -> /* TODO: Handle FavoriteItem play */ },
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            isTablet = isTablet,
+                            modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                         )
                     }
                 }
@@ -301,9 +332,10 @@ fun HomeTabContent(
                             title = "Películas Recientes",
                             movies = uiState.recentMovies,
                             onMovieClick = { movie -> 
-                                onNavigateToMovieDetail(movie.streamId)
+                                onMovieClick(movie.streamId)
                             },
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            isTablet = isTablet,
+                            modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                         )
                     }
                 }
@@ -315,9 +347,10 @@ fun HomeTabContent(
                             title = "Series Recientes",
                             series = uiState.recentSeries,
                             onSeriesClick = { series -> 
-                                onNavigateToSeriesDetail(series.seriesId)
+                                onSeriesClick(series.seriesId)
                             },
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            isTablet = isTablet,
+                            modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                         )
                     }
                 }
@@ -332,9 +365,10 @@ fun HomeTabContent(
                                 subtitle = "Lo más popular según TMDB",
                                 movies = tmdbContent.popularMovies,
                                 onMovieClick = { movie -> 
-                                    onNavigateToMovieDetail(movie.xtreamMovie.streamId)
+                                    onMovieClick(movie.xtreamMovie.streamId)
                                 },
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                isTablet = isTablet,
+                                modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                             )
                         }
                     }
@@ -347,9 +381,10 @@ fun HomeTabContent(
                                 subtitle = "Las más comentadas esta semana",
                                 movies = tmdbContent.trendingMovies,
                                 onMovieClick = { movie -> 
-                                    onNavigateToMovieDetail(movie.xtreamMovie.streamId)
+                                    onMovieClick(movie.xtreamMovie.streamId)
                                 },
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                isTablet = isTablet,
+                                modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                             )
                         }
                     }
@@ -362,9 +397,10 @@ fun HomeTabContent(
                                 subtitle = "Las mejores según críticos y usuarios",
                                 movies = tmdbContent.topRatedMovies,
                                 onMovieClick = { movie -> 
-                                    onNavigateToMovieDetail(movie.xtreamMovie.streamId)
+                                    onMovieClick(movie.xtreamMovie.streamId)
                                 },
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                isTablet = isTablet,
+                                modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                             )
                         }
                     }
@@ -377,9 +413,10 @@ fun HomeTabContent(
                                 subtitle = "Las series más populares según TMDB",
                                 series = tmdbContent.popularSeries,
                                 onSeriesClick = { series -> 
-                                    onNavigateToSeriesDetail(series.xtreamSeries.seriesId)
+                                    onSeriesClick(series.xtreamSeries.seriesId)
                                 },
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                isTablet = isTablet,
+                                modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                             )
                         }
                     }
@@ -392,9 +429,10 @@ fun HomeTabContent(
                                 subtitle = "Las más comentadas esta semana",
                                 series = tmdbContent.trendingSeries,
                                 onSeriesClick = { series -> 
-                                    onNavigateToSeriesDetail(series.xtreamSeries.seriesId)
+                                    onSeriesClick(series.xtreamSeries.seriesId)
                                 },
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                isTablet = isTablet,
+                                modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                             )
                         }
                     }
@@ -407,15 +445,16 @@ fun HomeTabContent(
                                 subtitle = "Las mejores series según críticos y usuarios",
                                 series = tmdbContent.topRatedSeries,
                                 onSeriesClick = { series -> 
-                                    onNavigateToSeriesDetail(series.xtreamSeries.seriesId)
+                                    onSeriesClick(series.xtreamSeries.seriesId)
                                 },
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                isTablet = isTablet,
+                                modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                             )
                         }
                     }
                 }
                 
-                // Estado de carga para TMDB
+                // Estado de carga para TMDB con mejor UX
                 if (uiState.isLoadingTMDB) {
                     items(3) { index ->
                         SkeletonContentSection(
@@ -423,26 +462,29 @@ fun HomeTabContent(
                                 0 -> "🔥 Películas Populares"
                                 1 -> "📈 Series en Tendencia" 
                                 else -> "⭐ Mejor Calificados"
-                            }
+                            },
+                            isTablet = isTablet,
+                            modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                         )
                     }
                 }
                 
-                // Error de TMDB
+                // Error de TMDB con mejor UX
                 uiState.tmdbError?.let { error ->
                     item {
                         ErrorStateCard(
                             title = "Error al cargar contenido TMDB",
                             message = error,
                             onRetry = { viewModel.refreshTMDBContent() },
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            isTablet = isTablet,
+                            modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 16.dp)
                         )
                     }
                 }
         
-        // Información adicional al final
+        // Información adicional al final con mejor espaciado
         item {
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(if (isTablet) 48.dp else 32.dp))
         }
     }
 }
@@ -458,8 +500,10 @@ fun HeroCarousel(
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
     val isTablet = configuration.screenWidthDp >= 600
-    val heroHeight = if (isTablet) 280.dp else 200.dp
+    val heroHeight = if (isTablet) 320.dp else 220.dp
+    val hapticFeedback = LocalHapticFeedback.current
     
     if (isLoading) {
         // Skeleton del hero carousel
@@ -482,12 +526,20 @@ fun HeroCarousel(
     
     val pagerState = rememberPagerState(pageCount = { items.size.coerceAtMost(5) })
     
-    // Auto-scroll para el hero carousel
-    LaunchedEffect(pagerState) {
+    // Auto-scroll para el hero carousel con mejor UX
+    LaunchedEffect(pagerState.pageCount) {
+        if (pagerState.pageCount <= 1) return@LaunchedEffect
+        
         while (true) {
-            delay(5000) // Cambiar cada 5 segundos
+            delay(6000) // Aumentar a 6 segundos para mejor UX
             val nextPage = (pagerState.currentPage + 1) % pagerState.pageCount
-            pagerState.animateScrollToPage(nextPage)
+            pagerState.animateScrollToPage(
+                page = nextPage,
+                animationSpec = tween(
+                    durationMillis = 800,
+                    easing = FastOutSlowInEasing
+                )
+            )
         }
     }
     
@@ -505,11 +557,18 @@ fun HeroCarousel(
             ) { page ->
                 HeroCarouselItem(
                     item = items[page],
-                    onItemClick = { onItemClick(items[page]) },
-                    onPlayClick = { onPlayClick(items[page]) },
+                    onItemClick = { 
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onItemClick(items[page]) 
+                    },
+                    onPlayClick = { 
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onPlayClick(items[page]) 
+                    },
+                    isTablet = isTablet,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = if (isTablet) 24.dp else 16.dp)
                 )
             }
             
@@ -543,13 +602,18 @@ fun HeroCarouselItem(
     item: ContentItem,
     onItemClick: () -> Unit,
     onPlayClick: () -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onItemClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        modifier = modifier
+            .graphicsLayer {
+                // Añadir sutil elevación con shadow
+                shadowElevation = if (isTablet) 12.dp.toPx() else 8.dp.toPx()
+            },
+        shape = RoundedCornerShape(if (isTablet) 20.dp else 16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isTablet) 12.dp else 8.dp)
     ) {
         Box {
             // Imagen de fondo con backdrop o poster de TMDB
@@ -698,21 +762,27 @@ fun HeroCarouselItem(
                 }
                 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(if (isTablet) 16.dp else 12.dp)
                 ) {
                     Button(
                         onClick = onPlayClick,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
-                        )
+                        ),
+                        modifier = Modifier.height(if (isTablet) 48.dp else 40.dp),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(if (isTablet) 20.dp else 18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Ver ahora")
+                        Text(
+                            text = "Ver ahora",
+                            style = if (isTablet) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                     
                     OutlinedButton(
@@ -720,9 +790,14 @@ fun HeroCarouselItem(
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = Color.White
                         ),
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.8f))
+                        border = BorderStroke(1.5.dp, Color.White.copy(alpha = 0.9f)),
+                        modifier = Modifier.height(if (isTablet) 48.dp else 40.dp)
                     ) {
-                        Text("Más info")
+                        Text(
+                            text = "Más info",
+                            style = if (isTablet) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
             }
@@ -733,30 +808,31 @@ fun HeroCarouselItem(
 @Composable
 fun SkeletonContentSection(
     title: String,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.padding(horizontal = 16.dp)
+        modifier = modifier
     ) {
         // Título skeleton
         SkeletonComponents.SkeletonBox(
             modifier = Modifier
-                .width(200.dp)
-                .height(24.dp)
+                .width(if (isTablet) 240.dp else 200.dp)
+                .height(if (isTablet) 28.dp else 24.dp)
         )
         
         Spacer(modifier = Modifier.height(12.dp))
         
         // Cards skeleton
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (isTablet) 16.dp else 12.dp)
         ) {
             items(5) {
                 SkeletonComponents.SkeletonBox(
                     modifier = Modifier
-                        .width(160.dp)
-                        .height(240.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .width(if (isTablet) 180.dp else 160.dp)
+                        .height(if (isTablet) 270.dp else 240.dp)
+                        .clip(RoundedCornerShape(if (isTablet) 16.dp else 12.dp))
                 )
             }
         }
@@ -768,6 +844,7 @@ fun ErrorStateCard(
     title: String,
     message: String,
     onRetry: () -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -777,13 +854,13 @@ fun ErrorStateCard(
         )
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(if (isTablet) 32.dp else 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
                 imageVector = Icons.Default.Error,
                 contentDescription = null,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(if (isTablet) 56.dp else 48.dp),
                 tint = MaterialTheme.colorScheme.onErrorContainer
             )
             
@@ -884,6 +961,7 @@ fun ContinueWatchingSection(
     items: List<PlaybackProgress>,
     onItemClick: (PlaybackProgress) -> Unit,
     onPlayClick: (PlaybackProgress) -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -907,13 +985,18 @@ fun ContinueWatchingSection(
         Spacer(modifier = Modifier.height(8.dp))
         
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (isTablet) 16.dp else 12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = rememberLazyListState())
         ) {
-            items(items) { item ->
+            items(
+                items = items,
+                key = { item -> "continue_${item.contentId}" }
+            ) { item ->
                 ContinueWatchingCard(
                     item = item,
-                    onClick = { onItemClick(item) }
+                    onClick = { onItemClick(item) },
+                    isTablet = isTablet
                 )
             }
         }
@@ -924,15 +1007,24 @@ fun ContinueWatchingSection(
 fun ContinueWatchingCard(
     item: PlaybackProgress,
     onClick: () -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
     Card(
         modifier = modifier
-            .width(160.dp)
-            .height(120.dp)
-            .clip(RoundedCornerShape(8.dp)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        onClick = onClick
+            .width(if (isTablet) 200.dp else 160.dp)
+            .height(if (isTablet) 140.dp else 120.dp)
+            .clip(RoundedCornerShape(if (isTablet) 12.dp else 8.dp))
+            .animateContentSize(),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isTablet) 6.dp else 4.dp,
+            pressedElevation = if (isTablet) 12.dp else 8.dp
+        ),
+        onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
+        }
     ) {
         Box {
             // Placeholder para imagen
@@ -989,6 +1081,7 @@ fun FavoritesSection(
     favorites: List<FavoriteItem>,
     onFavoriteClick: (FavoriteItem) -> Unit,
     onPlayClick: (FavoriteItem) -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -1013,13 +1106,18 @@ fun FavoritesSection(
         Spacer(modifier = Modifier.height(8.dp))
         
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (isTablet) 16.dp else 12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = rememberLazyListState())
         ) {
-            items(favorites) { favorite ->
+            items(
+                items = favorites,
+                key = { favorite -> "favorite_${favorite.contentId}" }
+            ) { favorite ->
                 FavoriteCard(
                     favorite = favorite,
-                    onClick = { onFavoriteClick(favorite) }
+                    onClick = { onFavoriteClick(favorite) },
+                    isTablet = isTablet
                 )
             }
         }
@@ -1030,14 +1128,24 @@ fun FavoritesSection(
 fun FavoriteCard(
     favorite: FavoriteItem,
     onClick: () -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
     Card(
         modifier = modifier
-            .width(120.dp)
-            .height(160.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        onClick = onClick
+            .width(if (isTablet) 140.dp else 120.dp)
+            .height(if (isTablet) 180.dp else 160.dp)
+            .animateContentSize(),
+        shape = RoundedCornerShape(if (isTablet) 12.dp else 8.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isTablet) 6.dp else 4.dp,
+            pressedElevation = if (isTablet) 12.dp else 8.dp
+        ),
+        onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
+        }
     ) {
         Column {
             // Imagen
@@ -1084,6 +1192,7 @@ fun RecentMoviesSection(
     title: String,
     movies: List<Movie>,
     onMovieClick: (Movie) -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -1102,7 +1211,7 @@ fun RecentMoviesSection(
                 Text("Ver todo")
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )
@@ -1112,13 +1221,18 @@ fun RecentMoviesSection(
         Spacer(modifier = Modifier.height(12.dp))
         
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (isTablet) 16.dp else 12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = rememberLazyListState())
         ) {
-            items(movies.take(10)) { movie ->
+            items(
+                items = movies.take(15),
+                key = { movie -> "movie_${movie.streamId}" }
+            ) { movie ->
                 XtreamMovieCard(
                     movie = movie,
-                    onClick = { onMovieClick(movie) }
+                    onClick = { onMovieClick(movie) },
+                    isTablet = isTablet
                 )
             }
         }
@@ -1130,6 +1244,7 @@ fun RecentSeriesSection(
     title: String,
     series: List<Series>,
     onSeriesClick: (Series) -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -1148,7 +1263,7 @@ fun RecentSeriesSection(
                 Text("Ver todo")
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp)
                 )
@@ -1158,13 +1273,18 @@ fun RecentSeriesSection(
         Spacer(modifier = Modifier.height(12.dp))
         
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (isTablet) 16.dp else 12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = rememberLazyListState())
         ) {
-            items(series.take(10)) { serie ->
+            items(
+                items = series.take(15),
+                key = { serie -> "series_${serie.seriesId}" }
+            ) { serie ->
                 XtreamSeriesCard(
                     series = serie,
-                    onClick = { onSeriesClick(serie) }
+                    onClick = { onSeriesClick(serie) },
+                    isTablet = isTablet
                 )
             }
         }
@@ -1175,15 +1295,25 @@ fun RecentSeriesSection(
 fun XtreamMovieCard(
     movie: Movie,
     onClick: () -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+    
     Card(
-        onClick = onClick,
+        onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
+        },
         modifier = modifier
-            .width(160.dp)  // Tamaño uniforme para todas las portadas
-            .height(240.dp), // Tamaño uniforme para todas las portadas
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .width(if (isTablet) 180.dp else 160.dp)
+            .height(if (isTablet) 270.dp else 240.dp)
+            .animateContentSize(),
+        shape = RoundedCornerShape(if (isTablet) 16.dp else 12.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isTablet) 6.dp else 4.dp,
+            pressedElevation = if (isTablet) 12.dp else 8.dp
+        )
     ) {
         Box {
             // Imagen del póster (solo placeholder ya que TMDB se carga on-demand)
@@ -1283,15 +1413,25 @@ fun XtreamMovieCard(
 fun XtreamSeriesCard(
     series: Series,
     onClick: () -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+    
     Card(
-        onClick = onClick,
+        onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
+        },
         modifier = modifier
-            .width(160.dp)  // Tamaño uniforme para todas las portadas
-            .height(240.dp), // Tamaño uniforme para todas las portadas
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .width(if (isTablet) 180.dp else 160.dp)
+            .height(if (isTablet) 270.dp else 240.dp)
+            .animateContentSize(),
+        shape = RoundedCornerShape(if (isTablet) 16.dp else 12.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isTablet) 6.dp else 4.dp,
+            pressedElevation = if (isTablet) 12.dp else 8.dp
+        )
     ) {
         Box {
             // Imagen del cover
@@ -1406,6 +1546,7 @@ fun TMDBMoviesSection(
     subtitle: String,
     movies: List<EnrichedTMDBMovie>,
     onMovieClick: (EnrichedTMDBMovie) -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -1426,16 +1567,18 @@ fun TMDBMoviesSection(
         }
         
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (isTablet) 16.dp else 12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = rememberLazyListState())
         ) {
             items(
-                items = movies.take(10), // Limitar a 10 elementos
-                key = { it.tmdbData.id }
+                items = movies.take(15),
+                key = { movie -> "tmdb_movie_${movie.tmdbData.id}" }
             ) { movie ->
                 TMDBMovieCard(
                     movie = movie,
-                    onClick = { onMovieClick(movie) }
+                    onClick = { onMovieClick(movie) },
+                    isTablet = isTablet
                 )
             }
         }
@@ -1448,6 +1591,7 @@ fun TMDBSeriesSection(
     subtitle: String,
     series: List<EnrichedTMDBSeries>,
     onSeriesClick: (EnrichedTMDBSeries) -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -1468,16 +1612,18 @@ fun TMDBSeriesSection(
         }
         
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp)
+            horizontalArrangement = Arrangement.spacedBy(if (isTablet) 16.dp else 12.dp),
+            contentPadding = PaddingValues(horizontal = 4.dp),
+            flingBehavior = rememberSnapFlingBehavior(lazyListState = rememberLazyListState())
         ) {
             items(
-                items = series.take(10), // Limitar a 10 elementos
-                key = { it.tmdbData.id }
+                items = series.take(15),
+                key = { seriesItem -> "tmdb_series_${seriesItem.tmdbData.id}" }
             ) { seriesItem ->
                 TMDBSeriesCard(
                     series = seriesItem,
-                    onClick = { onSeriesClick(seriesItem) }
+                    onClick = { onSeriesClick(seriesItem) },
+                    isTablet = isTablet
                 )
             }
         }
@@ -1488,14 +1634,25 @@ fun TMDBSeriesSection(
 fun TMDBMovieCard(
     movie: EnrichedTMDBMovie,
     onClick: () -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+    
     Card(
-        onClick = onClick,
+        onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
+        },
         modifier = modifier
-            .width(160.dp)  // Tamaño uniforme para todas las portadas
-            .height(240.dp), // Tamaño uniforme para todas las portadas
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .width(if (isTablet) 180.dp else 160.dp)
+            .height(if (isTablet) 270.dp else 240.dp)
+            .animateContentSize(),
+        shape = RoundedCornerShape(if (isTablet) 16.dp else 12.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isTablet) 6.dp else 4.dp,
+            pressedElevation = if (isTablet) 12.dp else 8.dp
+        )
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
@@ -1603,14 +1760,25 @@ fun TMDBMovieCard(
 fun TMDBSeriesCard(
     series: EnrichedTMDBSeries,
     onClick: () -> Unit,
+    isTablet: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+    
     Card(
-        onClick = onClick,
+        onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            onClick()
+        },
         modifier = modifier
-            .width(160.dp)  // Tamaño uniforme para todas las portadas
-            .height(240.dp), // Tamaño uniforme para todas las portadas
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .width(if (isTablet) 180.dp else 160.dp)
+            .height(if (isTablet) 270.dp else 240.dp)
+            .animateContentSize(),
+        shape = RoundedCornerShape(if (isTablet) 16.dp else 12.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isTablet) 6.dp else 4.dp,
+            pressedElevation = if (isTablet) 12.dp else 8.dp
+        )
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
