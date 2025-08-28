@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.activity)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.compose.foundation)
 
     // Arquitectura & DI
     implementation(libs.hilt.android)

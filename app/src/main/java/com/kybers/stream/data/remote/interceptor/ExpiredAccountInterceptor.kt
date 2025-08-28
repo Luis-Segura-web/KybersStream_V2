@@ -33,7 +33,7 @@ class ExpiredAccountInterceptor : Interceptor {
                 )
                 
                 for ((pattern, description) in expiredPatterns) {
-                    if (bodyString.contains(pattern, ignoreCase = true)) {
+                    if (pattern.isNotEmpty() && bodyString.contains(pattern, ignoreCase = true)) {
                         // Crear una respuesta de error apropiada
                         val errorBody = """
                             {

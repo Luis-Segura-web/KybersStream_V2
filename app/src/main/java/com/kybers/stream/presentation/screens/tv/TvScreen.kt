@@ -4,34 +4,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -39,19 +33,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import com.kybers.stream.domain.model.Channel
-import com.kybers.stream.presentation.components.SearchBar
-import com.kybers.stream.presentation.components.ViewMode
-import com.kybers.stream.presentation.components.ViewModeToggle
 import com.kybers.stream.presentation.components.epg.EpgNowNextDisplay
 import com.kybers.stream.presentation.components.epg.EpgLoadingPlaceholder
-import com.kybers.stream.presentation.components.epg.EpgErrorDisplay
 import com.kybers.stream.presentation.components.accessibility.AdaptiveText
 import com.kybers.stream.presentation.components.loading.SkeletonComponents
+import com.kybers.stream.presentation.components.ViewMode
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.PlayerView
+import androidx.compose.foundation.ExperimentalFoundationApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,12 +54,13 @@ fun TvScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val playbackState by viewModel.playbackState.collectAsStateWithLifecycle()
     val currentMedia by viewModel.currentMedia.collectAsStateWithLifecycle()
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
-    
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+    val isTablet = remember(windowInfo.containerSize) { with(density){ windowInfo.containerSize.width.toDp() >= 600.dp } }
+
     var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("") }
-    var showCategoryDropdown by remember { mutableStateOf(false) }
+    // Eliminado selectedCategory / dropdown; se usa expandedCategoryId en viewModel
+    val expandedCategoryId = uiState.expandedCategoryId
 
     Column(
         modifier = Modifier
@@ -87,22 +81,14 @@ fun TvScreen(
         )
 
         // Barra de búsqueda y filtros
-        SearchAndFilterSection(
+        LegacySearchBarSection(
             searchQuery = searchQuery,
-            onSearchQueryChange = { searchQuery = it },
-            onSearch = { viewModel.search(it) },
-            isSearching = uiState.isSearching,
-            viewMode = uiState.viewMode,
-            onViewModeChange = { viewModel.changeViewMode(it) },
-            selectedCategory = selectedCategory,
-            categories = uiState.categories,
-            showCategoryDropdown = showCategoryDropdown,
-            onShowCategoryDropdown = { showCategoryDropdown = it },
-            onCategorySelected = { category ->
-                selectedCategory = category
-                showCategoryDropdown = false
-                viewModel.selectCategory(category)
+            onSearchQueryChange = { searchQuery = it; viewModel.search(it) },
+            onClear = {
+                searchQuery = ""
+                viewModel.search("")
             },
+            isSearching = uiState.isSearching,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -124,31 +110,23 @@ fun TvScreen(
                     modifier = Modifier.fillMaxSize()
                 )
             }
-            uiState.filteredChannels.isEmpty() -> {
+            uiState.filteredChannels.isEmpty() && searchQuery.isNotEmpty() -> {
                 ChannelsEmptyState(
                     searchQuery = searchQuery,
-                    selectedCategory = selectedCategory,
+                    selectedCategory = "",
                     onClearFilters = {
                         searchQuery = ""
-                        selectedCategory = ""
                         viewModel.clearFilters()
                     },
                     modifier = Modifier.fillMaxSize()
                 )
             }
             else -> {
-                ChannelsList(
-                    channels = uiState.filteredChannels,
-                    channelsEpg = uiState.channelsEpg,
-                    viewMode = uiState.viewMode,
-                    isLoadingEpg = uiState.isLoadingEpg,
-                    currentPlayingId = uiState.currentPlayingChannelId,
-                    onChannelClick = { channel ->
-                        viewModel.playChannel(channel)
-                    },
-                    onFavoriteClick = { channel ->
-                        viewModel.toggleFavorite(channel)
-                    },
+                CategoriesAccordion(
+                    uiState = uiState,
+                    onToggleCategory = { viewModel.toggleCategory(it) },
+                    onChannelClick = { viewModel.playChannel(it) },
+                    onFavoriteClick = { viewModel.toggleFavorite(it) },
                     onRefreshEpg = { viewModel.refreshEpg() },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -157,6 +135,7 @@ fun TvScreen(
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 fun PlayerSection(
     viewModel: TvViewModel,
@@ -271,216 +250,326 @@ fun PlayerSection(
 }
 
 @Composable
-fun ExpandableCategoriesSection(
-    categories: List<com.kybers.stream.domain.model.Category>,
-    selectedCategory: String,
-    onCategorySelected: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var expandedCategories by remember { mutableStateOf(setOf<String>()) }
-    
-    LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(max = 400.dp), // Limitar altura máxima
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        // Opción "Todas las categorías"
-        item {
-            CategoryExpandableItem(
-                categoryName = "Todas las categorías",
-                isSelected = selectedCategory.isEmpty(),
-                isExpanded = false,
-                showChannels = false,
-                channels = emptyList(),
-                onCategoryClick = { onCategorySelected("") },
-                onToggleExpanded = { },
-                onChannelClick = { }
-            )
-        }
-        
-        // Categorías disponibles
-        items(categories) { category ->
-            val isExpanded = expandedCategories.contains(category.categoryId)
-            val isSelected = selectedCategory == category.categoryName
-            
-            CategoryExpandableItem(
-                categoryName = category.categoryName,
-                isSelected = isSelected,
-                isExpanded = isExpanded,
-                showChannels = isExpanded, // Mostrar canales cuando esté expandido
-                channels = emptyList(), // TODO: Obtener canales por categoría
-                onCategoryClick = { onCategorySelected(category.categoryName) },
-                onToggleExpanded = {
-                    expandedCategories = if (isExpanded) {
-                        expandedCategories - category.categoryId
-                    } else {
-                        expandedCategories + category.categoryId
-                    }
-                },
-                onChannelClick = { /* TODO: Manejar clic en canal desde categoría */ }
-            )
-        }
-    }
-}
-
-@Composable
-fun CategoryExpandableItem(
-    categoryName: String,
-    isSelected: Boolean,
-    isExpanded: Boolean,
-    showChannels: Boolean,
-    channels: List<Channel>, // Lista de canales para esta categoría
-    onCategoryClick: () -> Unit,
-    onToggleExpanded: () -> Unit,
-    onChannelClick: (Channel) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isExpanded) 180f else 0f,
-        animationSpec = tween(
-            durationMillis = 300,
-            easing = LinearOutSlowInEasing
-        ),
-        label = "expandIcon"
-    )
-    
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 1.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) 
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-            else 
-                MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .animateContentSize(
-                    animationSpec = tween(
-                        durationMillis = 300,
-                        easing = LinearOutSlowInEasing
-                    )
-                )
-        ) {
-            // Encabezado de categoría
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onCategoryClick() }
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Indicador de selección
-                    if (isSelected) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Categoría seleccionada",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    
-                    // Nombre de la categoría
-                    Text(
-                        text = categoryName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) 
-                            MaterialTheme.colorScheme.primary 
-                        else 
-                            MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                
-                // Botón de expansión solo si no es "Todas las categorías"
-                if (categoryName != "Todas las categorías") {
-                    IconButton(
-                        onClick = onToggleExpanded,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.KeyboardArrowDown,
-                            contentDescription = if (isExpanded) "Contraer" else "Expandir",
-                            modifier = Modifier
-                                .rotate(rotationAngle)
-                                .size(20.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-            
-            // Lista de canales expandible
-            if (showChannels && channels.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 300.dp)
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(channels) { channel ->
-                        CompactChannelItem(
-                            channel = channel,
-                            onClick = { onChannelClick(channel) }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CompactChannelItem(
-    channel: Channel,
-    onClick: () -> Unit,
+private fun LegacySearchBarSection(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    onClear: () -> Unit,
+    isSearching: Boolean,
     modifier: Modifier = Modifier
 ) {
     Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+            placeholder = { Text("Buscar canales...") },
+            trailingIcon = {
+                if (isSearching) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                } else if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = onClear) {
+                        Icon(Icons.Default.Clear, contentDescription = "Limpiar")
+                    }
+                }
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun CategoriesAccordion(
+    uiState: TvUiState,
+    onToggleCategory: (String) -> Unit,
+    onChannelClick: (Channel) -> Unit,
+    onFavoriteClick: (Channel) -> Unit,
+    onRefreshEpg: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val categories = uiState.categories
+    val expandedId = uiState.expandedCategoryId
+    val channels = uiState.filteredChannels
+    val channelsByCategory = remember(channels) {
+        channels.groupBy { it.categoryId ?: "" }
+    }
+
+    // Construir lista ordenada con expanded primero (stickyHeader) y resto después
+    val expandedCategory = categories.firstOrNull { it.categoryId == expandedId }
+    val otherCategories = categories.filter { it.categoryId != expandedId }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 16.dp)
+    ) {
+        if (expandedCategory != null) {
+            stickyHeader {
+                CategoryHeader(
+                    category = expandedCategory,
+                    isExpanded = true,
+                    onClick = { onToggleCategory(expandedCategory.categoryId) }
+                )
+            }
+            val catChannels = channelsByCategory[expandedCategory.categoryId] ?: emptyList()
+            items(catChannels, key = { it.streamId }) { ch ->
+                ChannelItem(
+                    channel = ch,
+                    channelEpg = uiState.channelsEpg[ch.streamId],
+                    isLoadingEpg = uiState.isLoadingEpg,
+                    isCurrentlyPlaying = uiState.currentPlayingChannelId == ch.streamId,
+                    onClick = { onChannelClick(ch) },
+                    onFavoriteClick = { onFavoriteClick(ch) },
+                    onRefreshEpg = onRefreshEpg
+                )
+            }
+        }
+        items(otherCategories, key = { it.categoryId }) { category ->
+            CategoryHeader(
+                category = category,
+                isExpanded = false,
+                onClick = { onToggleCategory(category.categoryId) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CategoryHeader(
+    category: com.kybers.stream.domain.model.Category,
+    isExpanded: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        tonalElevation = if (isExpanded) 4.dp else 0.dp,
+        color = if (isExpanded) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 0.dp)
     ) {
-        // Logo del canal
-        AsyncImage(
-            model = channel.icon,
-            contentDescription = "Logo de ${channel.name}",
+        Row(
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(MaterialTheme.colorScheme.surface),
-            contentScale = ContentScale.Crop
-        )
-        
-        // Nombre del canal
-        Text(
-            text = channel.name,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
-        )
-        
-        // Icono de reproducción
-        Icon(
-            imageVector = Icons.Default.PlayArrow,
-            contentDescription = "Reproducir",
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(18.dp)
-        )
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = category.categoryName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = if (isExpanded) FontWeight.Bold else FontWeight.Medium,
+                color = if (isExpanded) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+            )
+            Icon(
+                imageVector = if (isExpanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                contentDescription = if (isExpanded) "Contraer" else "Expandir"
+            )
+        }
+    }
+}
+
+@Composable
+fun ChannelItem(
+    channel: Channel,
+    channelEpg: com.kybers.stream.domain.model.ChannelEpg?,
+    isLoadingEpg: Boolean,
+    isCurrentlyPlaying: Boolean = false,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    onRefreshEpg: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isCurrentlyPlaying) 6.dp else 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCurrentlyPlaying)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            else
+                MaterialTheme.colorScheme.surface
+        ),
+        border = if (isCurrentlyPlaying)
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        else
+            null
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            // Logo del canal - cambio a cuadrado según especificaciones
+            AsyncImage(
+                model = channel.icon,
+                contentDescription = "Logo de ${channel.name}",
+                modifier = Modifier
+                    .size(56.dp) // Tamaño aumentado para mejor visibilidad
+                    .clip(RoundedCornerShape(8.dp)) // Esquinas redondeadas en lugar de círculo
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Información del canal
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                // Nombre del canal - permitir hasta 4 líneas
+                Text(
+                    text = channel.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = if (isCurrentlyPlaying) FontWeight.Bold else FontWeight.SemiBold,
+                    maxLines = 4, // Permitir hasta 4 líneas según especificación
+                    overflow = TextOverflow.Ellipsis,
+                    color = if (isCurrentlyPlaying)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // EPG mejorado con mejor formateo
+                when {
+                    isLoadingEpg -> {
+                        EpgLoadingPlaceholder()
+                    }
+                    channelEpg != null -> {
+                        EpgNowNextDisplay(
+                            channelEpg = channelEpg,
+                            use24HourFormat = true
+                        )
+                    }
+                    else -> {
+                        Text(
+                            text = "Sin información de EPG",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
+
+            // Botón de favorito
+            IconButton(
+                onClick = onFavoriteClick,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = if (false) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (false) "Quitar de favoritos" else "Agregar a favoritos",
+                    tint = if (false) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ChannelGridItem(
+    channel: Channel,
+    channelEpg: com.kybers.stream.domain.model.ChannelEpg?,
+    isLoadingEpg: Boolean,
+    isCurrentlyPlaying: Boolean = false,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column {
+            // Imagen del canal
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = channel.icon,
+                    contentDescription = "Logo de ${channel.name}",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // Información del canal
+            Column(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                // Nombre del canal
+                Text(
+                    text = channel.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                // EPG actual
+                channelEpg?.currentProgram?.let { currentProgram ->
+                    Text(
+                        text = "${currentProgram.getFormattedTime().split(" - ")[0]} - ${currentProgram.title}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                } ?: if (isLoadingEpg) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(12.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(6.dp)
+                            )
+                    )
+                } else {
+                    Text(
+                        text = "Sin información",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                // Botón de favorito en la esquina
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    IconButton(
+                        onClick = onFavoriteClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (false) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorito",
+                            tint = if (false) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -706,332 +795,6 @@ fun ChannelsEmptyState(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Limpiar filtros")
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SearchAndFilterSection(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onSearch: (String) -> Unit,
-    isSearching: Boolean,
-    viewMode: ViewMode,
-    onViewModeChange: (ViewMode) -> Unit,
-    selectedCategory: String,
-    categories: List<com.kybers.stream.domain.model.Category>,
-    showCategoryDropdown: Boolean,
-    onShowCategoryDropdown: (Boolean) -> Unit,
-    onCategorySelected: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        // Barra de búsqueda
-        SearchBar(
-            query = searchQuery,
-            onQueryChange = onSearchQueryChange,
-            onSearch = onSearch,
-            placeholder = "Buscar canales...",
-            isLoading = isSearching,
-            modifier = Modifier.fillMaxWidth()
-        )
-        
-        Spacer(modifier = Modifier.height(12.dp))
-        
-        // Sección mejorada de categorías expandibles
-        ExpandableCategoriesSection(
-            categories = categories,
-            selectedCategory = selectedCategory,
-            onCategorySelected = onCategorySelected
-        )
-    }
-}
-
-@Composable
-fun ChannelsList(
-    channels: List<Channel>,
-    channelsEpg: Map<String, com.kybers.stream.domain.model.ChannelEpg>,
-    viewMode: ViewMode,
-    isLoadingEpg: Boolean,
-    currentPlayingId: String? = null,
-    onChannelClick: (Channel) -> Unit,
-    onFavoriteClick: (Channel) -> Unit,
-    onRefreshEpg: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    when (viewMode) {
-        ViewMode.LIST -> {
-            LazyColumn(
-                modifier = modifier,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                items(
-                    items = channels,
-                    key = { it.streamId }
-                ) { channel ->
-                    ChannelItem(
-                        channel = channel,
-                        channelEpg = channelsEpg[channel.streamId],
-                        isLoadingEpg = isLoadingEpg,
-                        isCurrentlyPlaying = currentPlayingId == channel.streamId,
-                        onClick = { onChannelClick(channel) },
-                        onFavoriteClick = { onFavoriteClick(channel) },
-                        onRefreshEpg = onRefreshEpg
-                    )
-                }
-            }
-        }
-        
-        ViewMode.GRID -> {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 160.dp),
-                modifier = modifier,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                items(
-                    items = channels,
-                    key = { it.streamId }
-                ) { channel ->
-                    ChannelGridItem(
-                        channel = channel,
-                        channelEpg = channelsEpg[channel.streamId],
-                        isLoadingEpg = isLoadingEpg,
-                        isCurrentlyPlaying = currentPlayingId == channel.streamId,
-                        onClick = { onChannelClick(channel) },
-                        onFavoriteClick = { onFavoriteClick(channel) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ChannelItem(
-    channel: Channel,
-    channelEpg: com.kybers.stream.domain.model.ChannelEpg?,
-    isLoadingEpg: Boolean,
-    isCurrentlyPlaying: Boolean = false,
-    onClick: () -> Unit,
-    onFavoriteClick: () -> Unit,
-    onRefreshEpg: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isCurrentlyPlaying) 6.dp else 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isCurrentlyPlaying) 
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-            else 
-                MaterialTheme.colorScheme.surface
-        ),
-        border = if (isCurrentlyPlaying) 
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        else 
-            null
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            // Logo del canal - cambio a cuadrado según especificaciones
-            AsyncImage(
-                model = channel.icon,
-                contentDescription = "Logo de ${channel.name}",
-                modifier = Modifier
-                    .size(56.dp) // Tamaño aumentado para mejor visibilidad
-                    .clip(RoundedCornerShape(8.dp)) // Esquinas redondeadas en lugar de círculo
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentScale = ContentScale.Crop
-            )
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            // Información del canal
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                // Nombre del canal - permitir hasta 4 líneas
-                Text(
-                    text = channel.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = if (isCurrentlyPlaying) FontWeight.Bold else FontWeight.SemiBold,
-                    maxLines = 4, // Permitir hasta 4 líneas según especificación
-                    overflow = TextOverflow.Ellipsis,
-                    color = if (isCurrentlyPlaying) 
-                        MaterialTheme.colorScheme.primary 
-                    else 
-                        MaterialTheme.colorScheme.onSurface
-                )
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                // EPG mejorado con mejor formateo
-                when {
-                    isLoadingEpg -> {
-                        EpgLoadingPlaceholder()
-                    }
-                    channelEpg != null -> {
-                        EpgNowNextDisplay(
-                            channelEpg = channelEpg,
-                            use24HourFormat = true
-                        )
-                    }
-                    else -> {
-                        Text(
-                            text = "Sin información de EPG",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-            }
-            
-            // Botón de favorito
-            IconButton(
-                onClick = onFavoriteClick,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    imageVector = if (false) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (false) "Quitar de favoritos" else "Agregar a favoritos",
-                    tint = if (false) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ChannelGridItem(
-    channel: Channel,
-    channelEpg: com.kybers.stream.domain.model.ChannelEpg?,
-    isLoadingEpg: Boolean,
-    isCurrentlyPlaying: Boolean = false,
-    onClick: () -> Unit,
-    onFavoriteClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column {
-            // Imagen del canal
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = channel.icon,
-                    contentDescription = "Logo de ${channel.name}",
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            
-            // Información del canal
-            Column(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                // Nombre del canal
-                Text(
-                    text = channel.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                
-                // EPG actual
-                channelEpg?.currentProgram?.let { currentProgram ->
-                    Text(
-                        text = "${currentProgram.getFormattedTime().split(" - ")[0]} - ${currentProgram.title}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                } ?: if (isLoadingEpg) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(12.dp)
-                            .background(
-                                MaterialTheme.colorScheme.surfaceVariant,
-                                RoundedCornerShape(6.dp)
-                            )
-                    )
-                } else {
-                    Text(
-                        text = "Sin información",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                
-                // Botón de favorito en la esquina
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.CenterEnd
-                ) {
-                    IconButton(
-                        onClick = onFavoriteClick,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (false) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Favorito",
-                            tint = if (false) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ErrorMessage(
-    error: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Error: $error",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Button(onClick = onRetry) {
-            Text("Reintentar")
         }
     }
 }

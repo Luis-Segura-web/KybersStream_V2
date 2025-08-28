@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
@@ -259,7 +260,7 @@ fun SeriesTopSection(
             SegmentedButton(
                 options = listOf(
                     Icons.Default.GridView to "Cuadrícula",
-                    Icons.Default.ViewList to "Lista"
+                    Icons.AutoMirrored.Filled.ViewList to "Lista"
                 ),
                 selectedIndex = if (viewMode == ViewMode.GRID) 0 else 1,
                 onSelectionChanged = { index ->

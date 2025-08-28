@@ -27,7 +27,7 @@ import javax.inject.Singleton
 @Singleton
 class UserRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-    @XtreamRetrofit private val retrofit: Retrofit
+    @param:XtreamRetrofit private val retrofit: Retrofit
 ) : UserRepository {
     
     companion object {

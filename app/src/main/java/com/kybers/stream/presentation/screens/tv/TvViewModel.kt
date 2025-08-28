@@ -33,7 +33,8 @@ data class TvUiState(
     val isLoadingEpg: Boolean = false,
     val epgError: String? = null,
     val currentPlayingChannelId: String? = null,
-    val currentPlayingCategoryName: String? = null
+    val currentPlayingCategoryName: String? = null,
+    val expandedCategoryId: String? = null
 )
 
 @HiltViewModel
@@ -83,7 +84,7 @@ class TvViewModel @Inject constructor(
             getLiveCategoriesUseCase().collect { result ->
                 result.fold(
                     onSuccess = { categories ->
-                        _uiState.update { it.copy(categories = categories, error = null) }
+                        _uiState.update { it.copy(categories = categories, error = null, expandedCategoryId = categories.firstOrNull()?.categoryId) }
                     },
                     onFailure = { error ->
                         _uiState.update { it.copy(error = error.message) }
@@ -186,18 +187,12 @@ class TvViewModel @Inject constructor(
     ): List<Channel> {
         var filtered = channels
 
-        // Filtrar por categoría
-        if (categoryName.isNotEmpty()) {
-            filtered = filtered.filter { it.categoryId == categoryName }
-        }
-
-        // Filtrar por búsqueda
+        // Filtrar por búsqueda solamente (categorías se muestran completas y expandibles)
         if (searchQuery.isNotEmpty()) {
             filtered = filtered.filter { 
                 it.name.contains(searchQuery, ignoreCase = true)
             }
         }
-
         return filtered
     }
 
@@ -368,6 +363,29 @@ class TvViewModel @Inject constructor(
     
     fun getChannelEpg(streamId: String): ChannelEpg? {
         return _uiState.value.channelsEpg[streamId]
+    }
+
+    fun toggleCategory(categoryId: String) {
+        _uiState.update { state ->
+            if (state.expandedCategoryId == categoryId) {
+                // Ahora sí permitir colapsar: todas contraídas
+                state.copy(expandedCategoryId = null)
+            } else {
+                // Expandir sólo esta y contraer cualquier otra
+                state.copy(expandedCategoryId = categoryId)
+            }
+        }
+    }
+
+    fun moveCategory(fromIndex: Int, toIndex: Int) {
+        _uiState.update { state ->
+            val mutable = state.categories.toMutableList()
+            if (fromIndex in mutable.indices && toIndex in mutable.indices) {
+                val item = mutable.removeAt(fromIndex)
+                mutable.add(toIndex, item)
+                state.copy(categories = mutable)
+            } else state
+        }
     }
 
     override fun onCleared() {

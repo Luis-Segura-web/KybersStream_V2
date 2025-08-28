@@ -23,6 +23,7 @@ data class SeriesDetailUiState(
     val error: String? = null
 )
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SeriesDetailViewModel @Inject constructor(
     private val addFavoriteUseCase: AddFavoriteUseCase,

@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MenuAnchorType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +32,7 @@ fun QualitySettingItem(
             label = { Text("Calidad preferida") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
         )
 
@@ -76,7 +77,7 @@ fun LanguageSettingItem(
             label = { Text(title) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
         )
 
@@ -120,7 +121,7 @@ fun TimeFormatSettingItem(
             label = { Text("Formato de hora EPG") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
         )
 
@@ -144,11 +145,11 @@ fun TimeFormatSettingItem(
 @Composable
 fun SwitchSettingItem(
     title: String,
-    subtitle: String? = null,
-    icon: ImageVector? = null,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    icon: ImageVector? = null
 ) {
     Card(
         modifier = modifier.fillMaxWidth()
@@ -248,10 +249,10 @@ fun ParentalControlSettingItem(
 @Composable
 fun ActionSettingItem(
     title: String,
-    subtitle: String? = null,
-    icon: ImageVector? = null,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    icon: ImageVector? = null
 ) {
     Card(
         onClick = onClick,

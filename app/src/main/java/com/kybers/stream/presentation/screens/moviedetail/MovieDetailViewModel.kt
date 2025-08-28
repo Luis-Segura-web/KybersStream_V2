@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 data class MovieDetailUiState(
     val isLoading: Boolean = false,
@@ -25,6 +26,7 @@ data class MovieDetailUiState(
     val error: String? = null
 )
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
     private val addFavoriteUseCase: AddFavoriteUseCase,

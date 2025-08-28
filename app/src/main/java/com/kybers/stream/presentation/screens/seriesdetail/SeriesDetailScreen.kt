@@ -1,15 +1,15 @@
 package com.kybers.stream.presentation.screens.seriesdetail
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -180,7 +180,7 @@ fun SeriesHeader(
                 .padding(16.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Volver",
                 tint = Color.White
             )
@@ -232,9 +232,7 @@ fun SeriesHeader(
                         contentColor = Color.White,
                         containerColor = Color.Transparent
                     ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        brush = Brush.linearGradient(listOf(Color.White, Color.White))
-                    )
+                    border = BorderStroke(1.dp, Brush.linearGradient(listOf(Color.White, Color.White)))
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -412,8 +410,8 @@ fun EpisodeItem(
 @Composable
 fun SeriesChip(
     label: String,
-    color: Color = Color.White.copy(alpha = 0.2f),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    color: Color = Color.White.copy(alpha = 0.2f)
 ) {
     Surface(
         color = color,

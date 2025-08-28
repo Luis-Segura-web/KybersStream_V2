@@ -20,7 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class XtreamRepositoryImpl @Inject constructor(
     private val userRepository: UserRepository,
-    @XtreamRetrofit private val retrofit: Retrofit,
+    @param:XtreamRetrofit private val retrofit: Retrofit,
     private val cacheManager: CacheManager,
     private val databaseCacheManager: DatabaseCacheManager,
     private val retryStrategy: RetryStrategyUseCase

@@ -98,9 +98,7 @@ fun ExpiredAccountDialog(
                             onClick = onLogout,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
-                            border = ButtonDefaults.outlinedButtonBorder.copy(
-                                width = 1.dp
-                            )
+                            border = ButtonDefaults.outlinedButtonBorder(enabled = true)
                         ) {
                             Text(
                                 text = "Cerrar Sesión",

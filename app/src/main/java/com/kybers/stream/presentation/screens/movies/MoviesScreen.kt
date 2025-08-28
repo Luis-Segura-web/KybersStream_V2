@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
@@ -25,8 +27,9 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +43,7 @@ import coil.compose.AsyncImage
 import com.kybers.stream.domain.model.Movie
 import com.kybers.stream.presentation.components.accessibility.AdaptiveText
 import com.kybers.stream.presentation.components.loading.SkeletonComponents
+import androidx.compose.material3.MenuAnchorType
 
 enum class ViewMode {
     GRID, LIST
@@ -53,8 +57,11 @@ fun MoviesScreen(
     onMovieClick: (Movie) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val configuration = LocalConfiguration.current
-    val isTablet = configuration.screenWidthDp >= 600
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+    val isTablet = remember(windowInfo.containerSize, density) {
+        with(density) { windowInfo.containerSize.width.toDp() >= 600.dp }
+    }
     val focusManager = LocalFocusManager.current
     
     var searchQuery by remember { mutableStateOf("") }
@@ -264,7 +271,7 @@ fun MoviesTopSection(
             SegmentedButton(
                 options = listOf(
                     Icons.Default.GridView to "Cuadrícula",
-                    Icons.Default.ViewList to "Lista"
+                    Icons.AutoMirrored.Filled.ViewList to "Lista"
                 ),
                 selectedIndex = if (viewMode == ViewMode.GRID) 0 else 1,
                 onSelectionChanged = { index ->
@@ -769,7 +776,7 @@ fun SearchAndFilterSection(
                 }
             ) {
                 Icon(
-                    imageVector = if (viewMode == ViewMode.GRID) Icons.Default.List else Icons.Default.GridView,
+                    imageVector = if (viewMode == ViewMode.GRID) Icons.AutoMirrored.Filled.List else Icons.Default.GridView,
                     contentDescription = "Cambiar vista"
                 )
             }
@@ -791,7 +798,7 @@ fun SearchAndFilterSection(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor()
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
             )
             
             ExposedDropdownMenu(
@@ -822,8 +829,8 @@ fun MoviesList(
     movies: List<Movie>,
     viewMode: ViewMode,
     onMovieClick: (Movie) -> Unit,
+    modifier: Modifier = Modifier,
     onFavoriteClick: (Movie) -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     when (viewMode) {
         ViewMode.GRID -> {
@@ -841,6 +848,7 @@ fun MoviesList(
                     MovieGridItem(
                         movie = movie,
                         onClick = { onMovieClick(movie) },
+                        modifier = Modifier,
                         onFavoriteClick = { onFavoriteClick(movie) }
                     )
                 }
@@ -859,6 +867,7 @@ fun MoviesList(
                     MovieListItem(
                         movie = movie,
                         onClick = { onMovieClick(movie) },
+                        modifier = Modifier,
                         onFavoriteClick = { onFavoriteClick(movie) }
                     )
                 }
@@ -871,8 +880,8 @@ fun MoviesList(
 fun MovieGridItem(
     movie: Movie,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     onFavoriteClick: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
@@ -1001,8 +1010,8 @@ fun MovieGridItem(
 fun MovieListItem(
     movie: Movie,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     onFavoriteClick: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier

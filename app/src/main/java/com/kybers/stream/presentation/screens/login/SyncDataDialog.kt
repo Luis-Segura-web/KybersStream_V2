@@ -107,7 +107,7 @@ fun SyncDataDialog(
                     if (syncUiState.currentStep != SyncStep.ERROR && syncUiState.currentStep != SyncStep.COMPLETED) {
                         Column {
                             LinearProgressIndicator(
-                                progress = syncUiState.progress,
+                                progress = { syncUiState.progress },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(8.dp)
