@@ -349,21 +349,20 @@ class TvViewModel @Inject constructor(
             val channelIds = _uiState.value.filteredChannels.map { it.streamId }
             
             if (channelIds.isNotEmpty()) {
-                // First, try to refresh EPG data for these channels
-                try {
-                    // Call the repository method to refresh EPG for specific channels
-                    val epgRepositoryImpl = getChannelEpgUseCase.let { useCase ->
-                        // We need to access the EPG repository to refresh data
-                        // For now, we'll continue with individual channel EPG loading
-                    }
-                    
-                    // Refresh individual channel EPG data first
-                    channelIds.take(10).forEach { streamId ->
+                _uiState.update { it.copy(isLoadingEpg = true) }
+                
+                // Refresh EPG data for these channels (limit to first 20 to avoid overwhelming the API)
+                val channelsToRefresh = channelIds.take(20)
+                channelsToRefresh.forEach { streamId ->
+                    try {
                         refreshEpgUseCase.refreshChannel(streamId)
+                    } catch (e: Exception) {
+                        println("Error refreshing EPG for channel $streamId: ${e.message}")
                     }
-                } catch (e: Exception) {
-                    println("Error refreshing EPG: ${e.message}")
                 }
+                
+                // Small delay to allow API calls to complete
+                kotlinx.coroutines.delay(500)
             }
             
             val epgMap = mutableMapOf<String, ChannelEpg>()
@@ -375,11 +374,26 @@ class TvViewModel @Inject constructor(
                             _uiState.value.filteredChannels.find { it.streamId == streamId }?.name ?: ""
                         )
                     },
-                    onFailure = { /* Log error but continue with other channels */ }
+                    onFailure = { 
+                        // Create empty EPG entry for channels without data
+                        epgMap[streamId] = ChannelEpg(
+                            streamId = streamId,
+                            channelName = _uiState.value.filteredChannels.find { it.streamId == streamId }?.name ?: "",
+                            currentProgram = null,
+                            nextProgram = null,
+                            todayPrograms = emptyList()
+                        )
+                    }
                 )
             }
             
-            _uiState.update { it.copy(channelsEpg = epgMap) }
+            _uiState.update { 
+                it.copy(
+                    channelsEpg = epgMap, 
+                    isLoadingEpg = false,
+                    epgError = null
+                ) 
+            }
         }
     }
     

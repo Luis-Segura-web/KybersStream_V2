@@ -60,7 +60,15 @@ class EpgRepositoryImpl @Inject constructor(
             
             Result.success(channelEpg)
         } catch (e: Exception) {
-            Result.failure(e)
+            // Return empty EPG instead of failure to ensure UI can still display channels
+            val emptyChannelEpg = ChannelEpg(
+                streamId = streamId,
+                channelName = "",
+                currentProgram = null,
+                nextProgram = null,
+                todayPrograms = emptyList()
+            )
+            Result.success(emptyChannelEpg)
         }
     }
 
@@ -122,13 +130,14 @@ class EpgRepositoryImpl @Inject constructor(
         return getCurrentProgramFlow(streamId).map { currentProgram ->
             ChannelEpg(
                 streamId = streamId,
-                channelName = "",
+                channelName = "", // Will be populated by the calling code
                 currentProgram = currentProgram,
-                nextProgram = null // Could be optimized to include next program
+                nextProgram = null, // Could be optimized to include next program
+                todayPrograms = emptyList()
             )
         }
     }
-
+    
     override suspend fun refreshEpgData(forceRefresh: Boolean): Result<EpgData> {
         return try {
             val metadata = epgDao.getMetadata(EpgSource.SHORT_EPG.name)
@@ -274,26 +283,33 @@ class EpgRepositoryImpl @Inject constructor(
 
     private suspend fun refreshChannelFromApi(streamId: String) {
         // Fetch specific channel EPG from Xtream API
-        when (val result = xtreamRepository.getShortEpg(streamId, limit = 50)) {
-            is XtreamResult.Success -> {
-                val epgPrograms = result.data.epgListings.mapNotNull { listing ->
-                    parseEpgListing(listing, streamId)
+        try {
+            when (val result = xtreamRepository.getShortEpg(streamId, limit = 50)) {
+                is XtreamResult.Success -> {
+                    val epgPrograms = result.data.epgListings.mapNotNull { listing ->
+                        parseEpgListing(listing, streamId)
+                    }
+                    
+                    if (epgPrograms.isNotEmpty()) {
+                        // Delete old programs for this channel
+                        epgDao.deleteProgramsForChannel(streamId)
+                        // Insert new programs
+                        epgDao.insertPrograms(epgPrograms)
+                        println("Successfully refreshed EPG for stream $streamId with ${epgPrograms.size} programs")
+                    } else {
+                        println("No EPG programs found for stream $streamId")
+                    }
                 }
-                
-                if (epgPrograms.isNotEmpty()) {
-                    // Delete old programs for this channel
-                    epgDao.deleteProgramsForChannel(streamId)
-                    // Insert new programs
-                    epgDao.insertPrograms(epgPrograms)
+                is XtreamResult.Error -> {
+                    // Log error but don't throw exception to avoid breaking the entire refresh
+                    println("Error fetching EPG for stream $streamId: ${result.message}")
+                }
+                is XtreamResult.Loading -> {
+                    // Should not happen in this context
                 }
             }
-            is XtreamResult.Error -> {
-                // Log error but don't throw exception to avoid breaking the entire refresh
-                println("Error fetching EPG for stream $streamId: ${result.message}")
-            }
-            is XtreamResult.Loading -> {
-                // Should not happen in this context
-            }
+        } catch (e: Exception) {
+            println("Exception while refreshing EPG for stream $streamId: ${e.message}")
         }
     }
     
