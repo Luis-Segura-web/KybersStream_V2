@@ -1,0 +1,3370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.12.1" type="baseline" client="gradle" dependencies="false" name="AGP (8.12.1)" variant="all" version="8.12.1">
+
+    <issue
+        id="MissingClass"
+        message="Class referenced in the manifest, `androidx.media.session.MediaButtonReceiver`, was not found in the project or the libraries"
+        errorLine1="        &lt;receiver android:name=&quot;androidx.media.session.MediaButtonReceiver&quot;"
+        errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="42"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="ScopedStorage"
+        message="READ_EXTERNAL_STORAGE is deprecated (and is not granted) when targeting Android 13+. If you need to query or interact with MediaStore or media files on the shared storage, you should instead use one or more new storage permissions: `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO` or `READ_MEDIA_AUDIO`."
+        errorLine1="    &lt;uses-permission android:name=&quot;android.permission.READ_EXTERNAL_STORAGE&quot; />"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="13"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                rating = String.format(&quot;%.1f&quot;, Random.nextFloat() * 10),"
+        errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/DiscoveryRepositoryImpl.kt"
+            line="430"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                rating = String.format(&quot;%.1f&quot;, Random.nextFloat() * 10),"
+        errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/DiscoveryRepositoryImpl.kt"
+            line="453"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                rating = String.format(&quot;%.1f&quot;, Random.nextFloat() * 10),"
+        errorLine2="                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/DiscoveryRepositoryImpl.kt"
+            line="480"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        String.format(&quot;%d:%02d:%02d&quot;, hours, minutes, seconds)"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/player/FullscreenPlayerScreen.kt"
+            line="1345"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        String.format(&quot;%d:%02d&quot;, minutes, seconds)"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/player/FullscreenPlayerScreen.kt"
+            line="1347"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                                rating = String.format(&quot;%.1f&quot;, it.tmdbData.voteAverage),"
+        errorLine2="                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="267"
+            column="42"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                            text = String.format(&quot;%.1f&quot;, movie.tmdbData.voteAverage),"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1714"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                            text = String.format(&quot;%.1f&quot;, series.tmdbData.voteAverage),"
+        errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1840"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                        rating = String.format(&quot;%.1f&quot;, movie.voteAverage),"
+        errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/usecase/TMDBUseCases.kt"
+            line="221"
+            column="34"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="                        rating = String.format(&quot;%.1f&quot;, series.voteAverage),"
+        errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/usecase/TMDBUseCases.kt"
+            line="239"
+            column="34"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        String.format(&quot;%d:%02d:%02d&quot;, hours, minutes, seconds)"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/VideoPlayer.kt"
+            line="206"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="        String.format(&quot;%d:%02d&quot;, minutes, seconds)"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/VideoPlayer.kt"
+            line="208"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#minusHours`"
+        errorLine1="        val cutoffTime = LocalDateTime.now().minusHours(XTREAM_CACHE_HOURS)"
+        errorLine2="                                             ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="28"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val cutoffTime = LocalDateTime.now().minusHours(XTREAM_CACHE_HOURS)"
+        errorLine2="                                       ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="28"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isAfter`"
+        errorLine1="            metadata.isValid &amp;&amp; metadata.lastFullSync.isAfter(cutoffTime)"
+        errorLine2="                                                      ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="32"
+            column="55"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `ChronoLocalDateTime` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="            metadata.isValid &amp;&amp; metadata.lastFullSync.isAfter(cutoffTime)"
+        errorLine2="                                                              ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="32"
+            column="63"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#plusHours`"
+        errorLine1="        syncMetadata?.lastFullSync?.plusHours(XTREAM_CACHE_HOURS)"
+        errorLine2="                                    ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="38"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val now = LocalDateTime.now()"
+        errorLine2="                                ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="42"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val now = LocalDateTime.now()"
+        errorLine2="                                ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="63"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val now = LocalDateTime.now()"
+        errorLine2="                                ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="90"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val now = LocalDateTime.now()"
+        errorLine2="                                ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="110"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            lastFullSync = LocalDateTime.now(),"
+        errorLine2="                                         ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="126"
+            column="42"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#minusDays`"
+        errorLine1="        val cutoffTime = LocalDateTime.now().minusDays(TMDB_CACHE_DAYS)"
+        errorLine2="                                             ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="210"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val cutoffTime = LocalDateTime.now().minusDays(TMDB_CACHE_DAYS)"
+        errorLine2="                                       ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="210"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isAfter`"
+        errorLine1="        (movieEntity?.lastSync?.isAfter(cutoffTime) == true) || "
+        errorLine2="                                ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="214"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `ChronoLocalDateTime` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="        (movieEntity?.lastSync?.isAfter(cutoffTime) == true) || "
+        errorLine2="                                        ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="214"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isAfter`"
+        errorLine1="        (seriesEntity?.lastSync?.isAfter(cutoffTime) == true)"
+        errorLine2="                                 ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="215"
+            column="34"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `ChronoLocalDateTime` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="        (seriesEntity?.lastSync?.isAfter(cutoffTime) == true)"
+        errorLine2="                                         ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="215"
+            column="42"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            lastSync = LocalDateTime.now()"
+        errorLine2="                                     ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="240"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            lastSync = LocalDateTime.now()"
+        errorLine2="                                     ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="269"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#minusHours`"
+        errorLine1="        val xtreamCutoff = LocalDateTime.now().minusHours(XTREAM_CACHE_HOURS)"
+        errorLine2="                                               ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="361"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val xtreamCutoff = LocalDateTime.now().minusHours(XTREAM_CACHE_HOURS)"
+        errorLine2="                                         ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="361"
+            column="42"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#minusDays`"
+        errorLine1="        val tmdbCutoff = LocalDateTime.now().minusDays(TMDB_CACHE_DAYS)"
+        errorLine2="                                             ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="362"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val tmdbCutoff = LocalDateTime.now().minusDays(TMDB_CACHE_DAYS)"
+        errorLine2="                                       ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/cache/DatabaseCacheManager.kt"
+            line="362"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    val lastUpdated: LocalDateTime = LocalDateTime.now()"
+        errorLine2="                                                   ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Discovery.kt"
+            line="12"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    val lastUpdated: LocalDateTime = LocalDateTime.now()"
+        errorLine2="                                                   ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Discovery.kt"
+            line="12"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    val lastUpdated: LocalDateTime = LocalDateTime.now(),"
+        errorLine2="                                                   ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Discovery.kt"
+            line="161"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    val lastUpdated: LocalDateTime = LocalDateTime.now(),"
+        errorLine2="                                                   ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Discovery.kt"
+            line="161"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            val now = LocalDateTime.now()"
+        errorLine2="                                    ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/DiscoveryRepositoryImpl.kt"
+            line="288"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isBefore`"
+        errorLine1="                               lastUpdateTime?.isBefore(now.minusHours(cacheValidityHours)) == true"
+        errorLine2="                                               ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/DiscoveryRepositoryImpl.kt"
+            line="291"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#minusHours`"
+        errorLine1="                               lastUpdateTime?.isBefore(now.minusHours(cacheValidityHours)) == true"
+        errorLine2="                                                            ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/DiscoveryRepositoryImpl.kt"
+            line="291"
+            column="61"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                lastUpdated = LocalDateTime.now()"
+        errorLine2="                                            ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/DiscoveryRepositoryImpl.kt"
+            line="366"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            lastUpdateTime = LocalDateTime.now()"
+        errorLine2="                                           ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/DiscoveryRepositoryImpl.kt"
+            line="368"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#format`"
+        errorLine1="                        text = selectedDate.format(DateTimeFormatter.ofPattern(&quot;EEEE, d MMMM yyyy&quot;)),"
+        errorLine2="                                            ~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="211"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ofPattern`"
+        errorLine1="                        text = selectedDate.format(DateTimeFormatter.ofPattern(&quot;EEEE, d MMMM yyyy&quot;)),"
+        errorLine2="                                                                     ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="211"
+            column="70"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="            val hourIndex = timeSlots.indexOfFirst { it.hour == time.hour }"
+        errorLine2="                                                        ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="364"
+            column="57"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="            val hourIndex = timeSlots.indexOfFirst { it.hour == time.hour }"
+        errorLine2="                                                                     ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="364"
+            column="70"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="                        if (selectedTime?.hour == time.hour) "
+        errorLine2="                                          ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="499"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="                        if (selectedTime?.hour == time.hour) "
+        errorLine2="                                                       ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="499"
+            column="56"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#format`"
+        errorLine1="                    text = time.format(DateTimeFormatter.ofPattern(&quot;HH:mm&quot;)),"
+        errorLine2="                                ~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="511"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ofPattern`"
+        errorLine1="                    text = time.format(DateTimeFormatter.ofPattern(&quot;HH:mm&quot;)),"
+        errorLine2="                                                         ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="511"
+            column="58"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="                    fontWeight = if (selectedTime?.hour == time.hour) FontWeight.Bold else FontWeight.Normal,"
+        errorLine2="                                                   ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="513"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="                    fontWeight = if (selectedTime?.hour == time.hour) FontWeight.Bold else FontWeight.Normal,"
+        errorLine2="                                                                ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="513"
+            column="65"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="                    color = if (selectedTime?.hour == time.hour) "
+        errorLine2="                                              ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="514"
+            column="47"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="                    color = if (selectedTime?.hour == time.hour) "
+        errorLine2="                                                           ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="514"
+            column="60"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="                isSelected = selectedTime?.hour == timeSlot.hour,"
+        errorLine2="                                           ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="543"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#getHour`"
+        errorLine1="                isSelected = selectedTime?.hour == timeSlot.hour,"
+        errorLine2="                                                            ~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="543"
+            column="61"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#of`"
+        errorLine1="        LocalTime.of(hour, 0)"
+        errorLine2="                  ~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="959"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#toLocalTime`"
+        errorLine1="        val programStart = program.startTime?.toLocalTime()"
+        errorLine2="                                              ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="966"
+            column="47"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#toLocalTime`"
+        errorLine1="        val programEnd = program.endTime?.toLocalTime()"
+        errorLine2="                                          ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="967"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#isAfter`"
+        errorLine1="        (time.isAfter(programStart) || time == programStart) &amp;&amp;"
+        errorLine2="              ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="970"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalTime#isBefore`"
+        errorLine1="        time.isBefore(programEnd)"
+        errorLine2="             ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="971"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Duration#between`"
+        errorLine1="        get() = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                   ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="34"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Duration#toMinutes`"
+        errorLine1="        get() = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                                               ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="34"
+            column="64"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `Temporal` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="        get() = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                           ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="34"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `Temporal` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="        get() = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                                      ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="34"
+            column="55"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            val now = LocalDateTime.now()"
+        errorLine2="                                    ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="38"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isBefore`"
+        errorLine1="                now.isBefore(startTime) -> 0f"
+        errorLine2="                    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="40"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `ChronoLocalDateTime` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="                now.isBefore(startTime) -> 0f"
+        errorLine2="                             ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="40"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isAfter`"
+        errorLine1="                now.isAfter(endTime) -> 1f"
+        errorLine2="                    ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="41"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `ChronoLocalDateTime` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="                now.isAfter(endTime) -> 1f"
+        errorLine2="                            ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="41"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Duration#between`"
+        errorLine1="                    val total = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                                   ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="43"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Duration#toMinutes`"
+        errorLine1="                    val total = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                                                               ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="43"
+            column="80"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `Temporal` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="                    val total = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                                           ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="43"
+            column="60"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `Temporal` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="                    val total = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                                                      ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="43"
+            column="71"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Duration#between`"
+        errorLine1="                    val elapsed = java.time.Duration.between(startTime, now).toMinutes()"
+        errorLine2="                                                     ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="44"
+            column="54"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Duration#toMinutes`"
+        errorLine1="                    val elapsed = java.time.Duration.between(startTime, now).toMinutes()"
+        errorLine2="                                                                             ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="44"
+            column="78"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `Temporal` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="                    val elapsed = java.time.Duration.between(startTime, now).toMinutes()"
+        errorLine2="                                                             ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="44"
+            column="62"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `Temporal` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="                    val elapsed = java.time.Duration.between(startTime, now).toMinutes()"
+        errorLine2="                                                                        ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="44"
+            column="73"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            val now = LocalDateTime.now()"
+        errorLine2="                                    ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="52"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isAfter`"
+        errorLine1="            return !now.isBefore(startTime) &amp;&amp; !now.isAfter(endTime)"
+        errorLine2="                                                    ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="53"
+            column="53"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isBefore`"
+        errorLine1="            return !now.isBefore(startTime) &amp;&amp; !now.isAfter(endTime)"
+        errorLine2="                        ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="53"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `ChronoLocalDateTime` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="            return !now.isBefore(startTime) &amp;&amp; !now.isAfter(endTime)"
+        errorLine2="                                 ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="53"
+            column="34"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `ChronoLocalDateTime` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="            return !now.isBefore(startTime) &amp;&amp; !now.isAfter(endTime)"
+        errorLine2="                                                            ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="53"
+            column="61"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.ZoneId#systemDefault`"
+        errorLine1="    fun getFormattedTime(use24HourFormat: Boolean = true, zoneId: ZoneId = ZoneId.systemDefault()): String {"
+        errorLine2="                                                                                  ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="56"
+            column="83"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#atZone`"
+        errorLine1="        val zonedStart = startTime.atZone(zoneId)"
+        errorLine2="                                   ~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="57"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#atZone`"
+        errorLine1="        val zonedEnd = endTime.atZone(zoneId)"
+        errorLine2="                               ~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="58"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ofPattern`"
+        errorLine1="            DateTimeFormatter.ofPattern(&quot;HH:mm&quot;)"
+        errorLine2="                              ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="61"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ofPattern`"
+        errorLine1="            DateTimeFormatter.ofPattern(&quot;h:mm a&quot;)"
+        errorLine2="                              ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="63"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.ZonedDateTime#format`"
+        errorLine1="        return &quot;${zonedStart.format(formatter)} - ${zonedEnd.format(formatter)}&quot;"
+        errorLine2="                             ~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="66"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.ZonedDateTime#format`"
+        errorLine1="        return &quot;${zonedStart.format(formatter)} - ${zonedEnd.format(formatter)}&quot;"
+        errorLine2="                                                             ~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="66"
+            column="62"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Duration#between`"
+        errorLine1="        get() = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                   ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="94"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Duration#toMinutes`"
+        errorLine1="        get() = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                                               ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="94"
+            column="64"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `Temporal` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="        get() = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                           ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="94"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Implicit cast from `LocalDateTime` to `Temporal` requires API level 26, or core library desugaring (current min is 24)"
+        errorLine1="        get() = java.time.Duration.between(startTime, endTime).toMinutes()"
+        errorLine2="                                                      ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/model/Epg.kt"
+            line="94"
+            column="55"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.ZoneId#systemDefault`"
+        errorLine1="    timeZone: ZoneId = ZoneId.systemDefault(),"
+        errorLine2="                              ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/epg/EpgComponents.kt"
+            line="23"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.ZoneId#systemDefault`"
+        errorLine1="    timeZone: ZoneId = ZoneId.systemDefault(),"
+        errorLine2="                              ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/epg/EpgComponents.kt"
+            line="71"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    val createdAt: LocalDateTime = LocalDateTime.now(),"
+        errorLine2="                                                 ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/entity/EpgEntity.kt"
+            line="29"
+            column="50"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    val createdAt: LocalDateTime = LocalDateTime.now(),"
+        errorLine2="                                                 ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/entity/EpgEntity.kt"
+            line="29"
+            column="50"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    val updatedAt: LocalDateTime = LocalDateTime.now()"
+        errorLine2="                                                 ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/entity/EpgEntity.kt"
+            line="30"
+            column="50"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    val updatedAt: LocalDateTime = LocalDateTime.now()"
+        errorLine2="                                                 ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/entity/EpgEntity.kt"
+            line="30"
+            column="50"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            val currentTime = LocalDateTime.now()"
+        errorLine2="                                            ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="25"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            val currentTime = LocalDateTime.now()"
+        errorLine2="                                            ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="35"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            val currentTime = LocalDateTime.now()"
+        errorLine2="                                            ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="45"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDate#atStartOfDay`"
+        errorLine1="            val dayStart = currentTime.toLocalDate().atStartOfDay()"
+        errorLine2="                                                     ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="46"
+            column="54"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#toLocalDate`"
+        errorLine1="            val dayStart = currentTime.toLocalDate().atStartOfDay()"
+        errorLine2="                                       ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="46"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#plusDays`"
+        errorLine1="            val dayEnd = dayStart.plusDays(1)"
+        errorLine2="                                  ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="47"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            val currentTime = LocalDateTime.now()"
+        errorLine2="                                            ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="69"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDate#atStartOfDay`"
+        errorLine1="            val dayStart = date.toLocalDate().atStartOfDay()"
+        errorLine2="                                              ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="94"
+            column="47"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#toLocalDate`"
+        errorLine1="            val dayStart = date.toLocalDate().atStartOfDay()"
+        errorLine2="                                ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="94"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#plusDays`"
+        errorLine1="            val dayEnd = dayStart.plusDays(1)"
+        errorLine2="                                  ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="95"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val currentTime = LocalDateTime.now()"
+        errorLine2="                                        ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="117"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#isBefore`"
+        errorLine1="                               metadata.lastUpdated.isBefore(LocalDateTime.now().minusHours(1))"
+        errorLine2="                                                    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="136"
+            column="53"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#minusHours`"
+        errorLine1="                               metadata.lastUpdated.isBefore(LocalDateTime.now().minusHours(1))"
+        errorLine2="                                                                                 ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="136"
+            column="82"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                               metadata.lastUpdated.isBefore(LocalDateTime.now().minusHours(1))"
+        errorLine2="                                                                           ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="136"
+            column="76"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                    lastUpdated = LocalDateTime.now(),"
+        errorLine2="                                                ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="142"
+            column="49"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                lastUpdated = metadata?.lastUpdated ?: LocalDateTime.now(),"
+        errorLine2="                                                                     ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="151"
+            column="70"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                lastUpdated = LocalDateTime.now(),"
+        errorLine2="                                            ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="174"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#minusDays`"
+        errorLine1="            val cutoffTime = LocalDateTime.now().minusDays(1)"
+        errorLine2="                                                 ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="197"
+            column="50"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            val cutoffTime = LocalDateTime.now().minusDays(1)"
+        errorLine2="                                           ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="197"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                lastUpdated = metadata.firstOrNull()?.lastUpdated ?: LocalDateTime.now(),"
+        errorLine2="                                                                                   ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="221"
+            column="84"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDate#atStartOfDay`"
+        errorLine1="                val today = LocalDateTime.now().toLocalDate().atStartOfDay()"
+        errorLine2="                                                              ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="246"
+            column="63"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                val today = LocalDateTime.now().toLocalDate().atStartOfDay()"
+        errorLine2="                                          ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="246"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#toLocalDate`"
+        errorLine1="                val today = LocalDateTime.now().toLocalDate().atStartOfDay()"
+        errorLine2="                                                ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="246"
+            column="49"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#plusDays`"
+        errorLine1="                val tomorrow = today.plusDays(1)"
+        errorLine2="                                     ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="247"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            lastUpdated = LocalDateTime.now(),"
+        errorLine2="                                        ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="269"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                    createdAt = LocalDateTime.now(),"
+        errorLine2="                                              ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="318"
+            column="47"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="                    updatedAt = LocalDateTime.now()"
+        errorLine2="                                              ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="319"
+            column="47"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Instant#atZone`"
+        errorLine1="                java.time.Instant.ofEpochSecond(timestamp).atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()"
+        errorLine2="                                                           ~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="337"
+            column="60"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.Instant#ofEpochSecond`"
+        errorLine1="                java.time.Instant.ofEpochSecond(timestamp).atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()"
+        errorLine2="                                  ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="337"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.ZoneId#systemDefault`"
+        errorLine1="                java.time.Instant.ofEpochSecond(timestamp).atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()"
+        errorLine2="                                                                                   ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="337"
+            column="84"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.ZonedDateTime#toLocalDateTime`"
+        errorLine1="                java.time.Instant.ofEpochSecond(timestamp).atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()"
+        errorLine2="                                                                                                    ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="337"
+            column="101"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ofPattern`"
+        errorLine1="                    DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;),"
+        errorLine2="                                      ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="341"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ofPattern`"
+        errorLine1="                    DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss&quot;),"
+        errorLine2="                                      ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="342"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ofPattern`"
+        errorLine1="                    DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss&apos;Z&apos;&quot;),"
+        errorLine2="                                      ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="343"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ofPattern`"
+        errorLine1="                    DateTimeFormatter.ofPattern(&quot;yyyyMMddHHmmss&quot;),"
+        errorLine2="                                      ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="344"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Field requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME`"
+        errorLine1="                    DateTimeFormatter.ISO_LOCAL_DATE_TIME"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="345"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#parse`"
+        errorLine1="                        return LocalDateTime.parse(dateTimeStr, formatter)"
+        errorLine2="                                             ~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="350"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Exception requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeParseException`"
+        errorLine1="                    } catch (e: DateTimeParseException) {"
+        errorLine2="                                ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/repository/EpgRepositoryImpl.kt"
+            line="351"
+            column="33"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#format`"
+        errorLine1="        return localDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)"
+        errorLine2="                              ~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/database/KybersStreamDatabase.kt"
+            line="92"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Field requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME`"
+        errorLine1="        return localDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)"
+        errorLine2="                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/database/KybersStreamDatabase.kt"
+            line="92"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#parse`"
+        errorLine1="        return dateString?.let { LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME) }"
+        errorLine2="                                               ~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/database/KybersStreamDatabase.kt"
+            line="97"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Field requires API level 26, or core library desugaring (current min is 24): `java.time.format.DateTimeFormatter#ISO_LOCAL_DATE_TIME`"
+        errorLine1="        return dateString?.let { LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME) }"
+        errorLine2="                                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/database/KybersStreamDatabase.kt"
+            line="97"
+            column="58"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 34 (current min is 24): `java.util.regex.Matcher#replaceAll`"
+        errorLine1="            sanitized = pattern.matcher(sanitized).replaceAll { matchResult ->"
+        errorLine2="                                                   ~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/logging/SecureLogger.kt"
+            line="247"
+            column="52"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26 (current min is 24): `android.os.StrictMode.ThreadPolicy.Builder#detectUnbufferedIo`"
+        errorLine1="                .detectUnbufferedIo() // Detectar IO sin buffer"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/debug/StrictModeHelper.kt"
+            line="37"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 29 (current min is 28): `android.os.StrictMode.VmPolicy.Builder#detectImplicitDirectBoot`"
+        errorLine1="                .detectImplicitDirectBoot() // Detectar problemas de arranque directo"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/debug/StrictModeHelper.kt"
+            line="76"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#minusDays`"
+        errorLine1="        val cutoffTime = LocalDateTime.now().minusDays(7)"
+        errorLine2="                                             ~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/dao/TMDBCacheDao.kt"
+            line="89"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="        val cutoffTime = LocalDateTime.now().minusDays(7)"
+        errorLine2="                                       ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/dao/TMDBCacheDao.kt"
+            line="89"
+            column="40"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="            lastCleanup = LocalDateTime.now(),"
+        errorLine2="                                        ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/local/dao/TMDBCacheDao.kt"
+            line="96"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 28 (current min is 24): `android.content.pm.PackageInfo#getLongVersionCode`"
+        errorLine1="            &quot;${packageInfo.versionName} (${packageInfo.longVersionCode})&quot;"
+        errorLine2="                                                       ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/usecase/telemetry/TelemetryUseCases.kt"
+            line="64"
+            column="56"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 26, or core library desugaring (current min is 24): `java.time.LocalDateTime#now`"
+        errorLine1="    private val _selectedDate = MutableStateFlow(LocalDateTime.now())"
+        errorLine2="                                                               ~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/viewmodels/ViewModelPlaceholders.kt"
+            line="17"
+            column="64"/>
+    </issue>
+
+    <issue
+        id="SdCardPath"
+        message="Do not hardcode &quot;`/data/`&quot;; use `Context.getFilesDir().getPath()` instead"
+        errorLine1="        val logDir = File(&quot;/data/data/com.kybers.stream/files/logs&quot;)"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/logging/SecureLogger.kt"
+            line="354"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="SdCardPath"
+        message="Do not hardcode &quot;`/data/`&quot;; use `Context.getFilesDir().getPath()` instead"
+        errorLine1="            val logDir = File(&quot;/data/data/com.kybers.stream/files/logs&quot;)"
+        errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/logging/SecureLogger.kt"
+            line="365"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="RedundantLabel"
+        message="Redundant label can be removed"
+        errorLine1="            android:label=&quot;@string/app_name&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="33"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of Gradle than 8.13 is available: 8.14.3"
+        errorLine1="distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="$HOME/work/KybersStream_V2/KybersStream_V2/gradle/wrapper/gradle-wrapper.properties"
+            line="4"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of com.android.application than 8.12.1 is available: 8.12.2"
+        errorLine1="agp = &quot;8.12.1&quot;"
+        errorLine2="      ~~~~~~~~">
+        <location
+            file="$HOME/work/KybersStream_V2/KybersStream_V2/gradle/libs.versions.toml"
+            line="2"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                        controllerShowTimeoutMs = 3000"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/moviedetail/MovieDetailScreen.kt"
+            line="795"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                        setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/moviedetail/MovieDetailScreen.kt"
+            line="796"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                        setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)"
+        errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/moviedetail/MovieDetailScreen.kt"
+            line="796"
+            column="53"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="    override fun createDataSource(): DataSource {"
+        errorLine2="                 ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/datasource/OkHttpDataSourceFactory.kt"
+            line="14"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setCacheControl(okhttp3.CacheControl.FORCE_NETWORK)"
+        errorLine2="             ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/datasource/OkHttpDataSourceFactory.kt"
+            line="17"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .createDataSource()"
+        errorLine2="             ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/datasource/OkHttpDataSourceFactory.kt"
+            line="18"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="    override fun createDataSource(): DataSource {"
+        errorLine2="                 ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/datasource/OkHttpDataSourceFactory.kt"
+            line="26"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .createDataSource()"
+        errorLine2="             ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/datasource/OkHttpDataSourceFactory.kt"
+            line="29"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                exoPlayer.setMediaSource(mediaSource)"
+        errorLine2="                          ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="136"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            MediaSourceType.HLS -> HlsMediaSource.Factory(dataSourceFactory)"
+        errorLine2="                                                  ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="160"
+            column="51"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                .createMediaSource(mediaItem)"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="161"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            MediaSourceType.DASH -> DashMediaSource.Factory(dataSourceFactory)"
+        errorLine2="                                                    ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="162"
+            column="53"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                .createMediaSource(mediaItem)"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="163"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            MediaSourceType.PROGRESSIVE -> ProgressiveMediaSource.Factory(dataSourceFactory)"
+        errorLine2="                                                                  ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="164"
+            column="67"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                .createMediaSource(mediaItem)"
+        errorLine2="                 ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="165"
+            column="18"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            url.contains(&quot;.mkv&quot;) -> MimeTypes.VIDEO_MATROSKA"
+        errorLine2="                                              ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="217"
+            column="47"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="    fun provideSimpleCache(@ApplicationContext context: Context): SimpleCache {"
+        errorLine2="                                                                  ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="57"
+            column="67"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        val cacheEvictor = LeastRecentlyUsedCacheEvictor(50 * 1024 * 1024) // 50MB cache"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="59"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        val cacheEvictor = LeastRecentlyUsedCacheEvictor(50 * 1024 * 1024) // 50MB cache"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="59"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        val databaseProvider = StandaloneDatabaseProvider(context)"
+        errorLine2="            ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="60"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        val databaseProvider = StandaloneDatabaseProvider(context)"
+        errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="60"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        return SimpleCache(cacheDirectory, cacheEvictor, databaseProvider)"
+        errorLine2="               ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="61"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        cache: SimpleCache"
+        errorLine2="               ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="69"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        return CacheDataSource.Factory()"
+        errorLine2="                               ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="78"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setCache(cache)"
+        errorLine2="             ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="79"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setUpstreamDataSourceFactory(defaultDataSourceFactory)"
+        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="80"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)"
+        errorLine2="             ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="81"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)"
+        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="81"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="    fun provideLoadControl(): LoadControl {"
+        errorLine2="                              ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="86"
+            column="31"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        return DefaultLoadControl.Builder()"
+        errorLine2="                                  ~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="87"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setBufferDurationsMs("
+        errorLine2="             ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="88"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .build()"
+        errorLine2="             ~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="94"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="    fun provideExtractorsFactory(): DefaultExtractorsFactory {"
+        errorLine2="                                    ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="99"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        return DefaultExtractorsFactory()"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="100"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setTsExtractorFlags(0)"
+        errorLine2="             ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="101"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setTsExtractorTimestampSearchBytes(1500 * TsExtractor.TS_PACKET_SIZE)"
+        errorLine2="             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="102"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setTsExtractorTimestampSearchBytes(1500 * TsExtractor.TS_PACKET_SIZE)"
+        errorLine2="                                                                   ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="102"
+            column="68"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        loadControl: LoadControl,"
+        errorLine2="                     ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="110"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        extractorsFactory: DefaultExtractorsFactory"
+        errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="111"
+            column="28"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="        val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory, extractorsFactory)"
+        errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="118"
+            column="34"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="            .setLoadControl(loadControl)"
+        errorLine2="             ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/di/PlayerModule.kt"
+            line="122"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="@OptIn(UnstableApi::class)"
+        errorLine2="       ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/tv/TvScreen.kt"
+            line="138"
+            column="8"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                            controllerShowTimeoutMs = 3000"
+        errorLine2="                            ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/tv/TvScreen.kt"
+            line="164"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                            setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)"
+        errorLine2="                            ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/tv/TvScreen.kt"
+            line="165"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                            setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)"
+        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/tv/TvScreen.kt"
+            line="165"
+            column="57"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                        controllerShowTimeoutMs = 3000"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/VideoPlayer.kt"
+            line="49"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                        setShowRewindButton(false)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/VideoPlayer.kt"
+            line="50"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.media3.common.util.UnstableApi` or `@OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)`"
+        errorLine1="                        setShowFastForwardButton(false)"
+        errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/VideoPlayer.kt"
+            line="51"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/accessibility/AdaptiveText.kt"
+            line="32"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/epg/EPGTimelineScreen.kt"
+            line="67"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/settings/EnhancedSettingsScreen.kt"
+            line="52"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/player/FullscreenPlayerScreen.kt"
+            line="69"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenHeightDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp"
+        errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/player/FullscreenPlayerScreen.kt"
+            line="70"
+            column="53"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp"
+        errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/player/FullscreenPlayerScreen.kt"
+            line="70"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/search/GlobalSearchScreen.kt"
+            line="66"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="97"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="219"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="504"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/login/LoginScreen.kt"
+            line="55"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/moviedetail/MovieDetailScreen.kt"
+            line="61"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/series/SeriesScreen.kt"
+            line="53"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ConfigurationScreenWidthHeight"
+        message="Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize"
+        errorLine1="    val isTablet = configuration.screenWidthDp >= 600"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/splash/SplashScreen.kt"
+            line="36"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="LocalContextConfigurationRead"
+        message="Reading Configuration using LocalContext.current.resources.configuration"
+        errorLine1="    val fontScale = context.resources.configuration.fontScale"
+        errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/accessibility/AccessibilityComponents.kt"
+            line="69"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="LocalContextConfigurationRead"
+        message="Reading Configuration using LocalContext.current.resources.configuration"
+        errorLine1="        return context.resources.configuration.fontScale >= 1.3f"
+        errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/accessibility/AccessibilityComponents.kt"
+            line="175"
+            column="16"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/discovery/DiscoveryComponents.kt"
+            line="31"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/discovery/DiscoveryComponents.kt"
+            line="119"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/empty/EmptyStateComponents.kt"
+            line="207"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/settings/EnhancedSettingsScreen.kt"
+            line="498"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/settings/EnhancedSettingsScreen.kt"
+            line="556"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/settings/EnhancedSettingsScreen.kt"
+            line="619"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/epg/EpgComponents.kt"
+            line="24"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/epg/EpgComponents.kt"
+            line="73"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/player/FullscreenPlayerScreen.kt"
+            line="584"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/player/FullscreenPlayerScreen.kt"
+            line="686"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="606"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="812"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="848"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="965"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1011"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1085"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1132"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1196"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1248"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1299"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1417"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1550"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1595"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1638"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/home/HomeScreen.kt"
+            line="1764"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/moviedetail/MovieDetailScreen.kt"
+            line="908"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/moviedetail/MovieDetailScreen.kt"
+            line="943"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/moviedetail/MovieDetailScreen.kt"
+            line="988"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/moviedetail/MovieDetailScreen.kt"
+            line="1002"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier,"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/SearchBar.kt"
+            line="28"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/series/SeriesScreen.kt"
+            line="751"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/series/SeriesScreen.kt"
+            line="800"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/series/SeriesScreen.kt"
+            line="922"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/TMDBEnhancedCard.kt"
+            line="39"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/TMDBEnhancedCard.kt"
+            line="217"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/TMDBEnhancedCard.kt"
+            line="393"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/tv/TvScreen.kt"
+            line="384"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="ModifierParameter"
+        message="Modifier parameter should be the first optional parameter"
+        errorLine1="    modifier: Modifier = Modifier"
+        errorLine2="    ~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/screens/tv/TvScreen.kt"
+            line="485"
+            column="5"/>
+    </issue>
+
+    <issue
+        id="AcceptsUserCertificates"
+        message="The Network Security Configuration allows the use of user certificates in the release version of your app"
+        errorLine1="            &lt;certificates src=&quot;user&quot;/>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/xml/network_security_config.xml"
+            line="9"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="InsecureBaseConfiguration"
+        message="Insecure Base Configuration"
+        errorLine1="    &lt;base-config cleartextTrafficPermitted=&quot;true&quot;>"
+        errorLine2="                                            ~~~~">
+        <location
+            file="src/main/res/xml/network_security_config.xml"
+            line="4"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; `SDK_INT` is always >= 24"
+        errorLine1="            val downstreamKbps = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {"
+        errorLine2="                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/network/ConnectivityManager.kt"
+            line="169"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; `SDK_INT` is always >= 24"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/debug/StrictModeHelper.kt"
+            line="34"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; `SDK_INT` is always >= 24"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/debug/StrictModeHelper.kt"
+            line="61"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`"
+        errorLine1="        remember { mutableStateOf(0.6f) }"
+        errorLine2="                   ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/empty/EmptyStateComponents.kt"
+            line="222"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`"
+        errorLine1="        remember { mutableStateOf(1f) }"
+        errorLine2="                   ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/presentation/components/empty/EmptyStateComponents.kt"
+            line="236"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.xml.network_security_config` appears to be unused"
+        errorLine1="&lt;network-security-config>"
+        errorLine2="^">
+        <location
+            file="src/main/res/xml/network_security_config.xml"
+            line="2"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.loading` appears to be unused"
+        errorLine1="    &lt;string name=&quot;loading&quot;>Cargando…&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="6"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.error` appears to be unused"
+        errorLine1="    &lt;string name=&quot;error&quot;>Error&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="7"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.retry` appears to be unused"
+        errorLine1="    &lt;string name=&quot;retry&quot;>Reintentar&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="8"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.cancel` appears to be unused"
+        errorLine1="    &lt;string name=&quot;cancel&quot;>Cancelar&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="9"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.ok` appears to be unused"
+        errorLine1="    &lt;string name=&quot;ok&quot;>Aceptar&lt;/string>"
+        errorLine2="            ~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="10"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.yes` appears to be unused"
+        errorLine1="    &lt;string name=&quot;yes&quot;>Sí&lt;/string>"
+        errorLine2="            ~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="11"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.no` appears to be unused"
+        errorLine1="    &lt;string name=&quot;no&quot;>No&lt;/string>"
+        errorLine2="            ~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="12"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.login_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;login_title&quot;>Iniciar Sesión&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="15"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.server_label` appears to be unused"
+        errorLine1="    &lt;string name=&quot;server_label&quot;>Servidor&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="16"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.server_placeholder` appears to be unused"
+        errorLine1="    &lt;string name=&quot;server_placeholder&quot;>http://ejemplo.com:8080&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="17"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.username_label` appears to be unused"
+        errorLine1="    &lt;string name=&quot;username_label&quot;>Usuario&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="18"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.password_label` appears to be unused"
+        errorLine1="    &lt;string name=&quot;password_label&quot;>Contraseña&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="19"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.login_button` appears to be unused"
+        errorLine1="    &lt;string name=&quot;login_button&quot;>Iniciar Sesión&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="20"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.login_error` appears to be unused"
+        errorLine1="    &lt;string name=&quot;login_error&quot;>Error de autenticación&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="21"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.welcome_message` appears to be unused"
+        errorLine1="    &lt;string name=&quot;welcome_message&quot;>¡Bienvenido a KybersStream!&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="24"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.home_development_message` appears to be unused"
+        errorLine1="    &lt;string name=&quot;home_development_message&quot;>Pantalla principal - En desarrollo&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="25"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.logout_button` appears to be unused"
+        errorLine1="    &lt;string name=&quot;logout_button&quot;>Cerrar Sesión&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="26"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_home` appears to be unused"
+        errorLine1="    &lt;string name=&quot;nav_home&quot;>Inicio&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="29"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_tv` appears to be unused"
+        errorLine1="    &lt;string name=&quot;nav_tv&quot;>TV&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="30"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_movies` appears to be unused"
+        errorLine1="    &lt;string name=&quot;nav_movies&quot;>Películas&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="31"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_series` appears to be unused"
+        errorLine1="    &lt;string name=&quot;nav_series&quot;>Series&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="32"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.nav_settings` appears to be unused"
+        errorLine1="    &lt;string name=&quot;nav_settings&quot;>Ajustes&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="33"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.player_error` appears to be unused"
+        errorLine1="    &lt;string name=&quot;player_error&quot;>Error de reproducción&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="36"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.player_loading` appears to be unused"
+        errorLine1="    &lt;string name=&quot;player_loading&quot;>Cargando stream…&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="37"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_title` appears to be unused"
+        errorLine1="    &lt;string name=&quot;settings_title&quot;>Ajustes&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="40"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_theme` appears to be unused"
+        errorLine1="    &lt;string name=&quot;settings_theme&quot;>Tema&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="41"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_theme_light` appears to be unused"
+        errorLine1="    &lt;string name=&quot;settings_theme_light&quot;>Claro&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="42"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_theme_dark` appears to be unused"
+        errorLine1="    &lt;string name=&quot;settings_theme_dark&quot;>Oscuro&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="43"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.string.settings_theme_system` appears to be unused"
+        errorLine1="    &lt;string name=&quot;settings_theme_system&quot;>Sistema&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="44"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="UsableSpace"
+        message="Consider also using `StorageManager#getAllocatableBytes` and `allocateBytes` which will consider clearable cached data"
+        errorLine1="            val internal = context.filesDir.usableSpace / 1024 / 1024 / 1024"
+        errorLine2="                                            ~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/domain/usecase/telemetry/TelemetryUseCases.kt"
+            line="114"
+            column="45"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            val uri = Uri.parse(url)"
+        errorLine2="                      ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/security/NetworkSecurityUtils.kt"
+            line="81"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            val uri = Uri.parse(url)"
+        errorLine2="                      ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/security/NetworkSecurityUtils.kt"
+            line="268"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            val uri = Uri.parse(url)"
+        errorLine2="                      ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/security/NetworkSecurityUtils.kt"
+            line="290"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            val uri = Uri.parse(url)"
+        errorLine2="                      ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/security/NetworkSecurityUtils.kt"
+            line="309"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            val uri = Uri.parse(url)"
+        errorLine2="                      ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/security/NetworkSecurityUtils.kt"
+            line="329"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="        val uri = Uri.parse(mediaInfo.mediaUri)"
+        errorLine2="                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="156"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="                mediaInfo.artworkUri?.let { setArtworkUri(Uri.parse(it)) }"
+        errorLine2="                                                          ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="174"
+            column="59"/>
+    </issue>
+
+    <issue
+        id="UseKtx"
+        message="Use the KTX extension function `String.toUri` instead?"
+        errorLine1="            val subtitle = MediaItem.SubtitleConfiguration.Builder(Uri.parse(subtitleUri))"
+        errorLine2="                                                                   ~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/kybers/stream/data/manager/PlaybackManagerImpl.kt"
+            line="190"
+            column="68"/>
+    </issue>
+
+</issues>

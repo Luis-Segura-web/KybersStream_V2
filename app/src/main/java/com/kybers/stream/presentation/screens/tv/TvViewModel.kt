@@ -131,6 +131,9 @@ class TvViewModel @Inject constructor(
                 filteredChannels = applyFilters(allChannels, categoryName, currentState.searchQuery)
             )
         }
+        
+        // Load EPG for the newly filtered channels
+        loadChannelsEpg()
     }
 
     fun search(query: String) {
@@ -344,6 +347,25 @@ class TvViewModel @Inject constructor(
     private fun loadChannelsEpg() {
         viewModelScope.launch {
             val channelIds = _uiState.value.filteredChannels.map { it.streamId }
+            
+            if (channelIds.isNotEmpty()) {
+                // First, try to refresh EPG data for these channels
+                try {
+                    // Call the repository method to refresh EPG for specific channels
+                    val epgRepositoryImpl = getChannelEpgUseCase.let { useCase ->
+                        // We need to access the EPG repository to refresh data
+                        // For now, we'll continue with individual channel EPG loading
+                    }
+                    
+                    // Refresh individual channel EPG data first
+                    channelIds.take(10).forEach { streamId ->
+                        refreshEpgUseCase.refreshChannel(streamId)
+                    }
+                } catch (e: Exception) {
+                    println("Error refreshing EPG: ${e.message}")
+                }
+            }
+            
             val epgMap = mutableMapOf<String, ChannelEpg>()
             
             channelIds.forEach { streamId ->
