@@ -3,20 +3,21 @@ package com.kybers.stream.data.repository
 import com.kybers.stream.data.local.dao.EpgDao
 import com.kybers.stream.data.local.entity.EpgProgramEntity
 import com.kybers.stream.data.local.entity.EpgMetadataEntity
-import com.kybers.stream.data.remote.api.XtreamApi
 import com.kybers.stream.domain.model.*
 import com.kybers.stream.domain.repository.EpgRepository
+import com.kybers.stream.domain.repository.XtreamRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class EpgRepositoryImpl @Inject constructor(
     private val epgDao: EpgDao,
-    private val xtreamApi: XtreamApi
+    private val xtreamRepository: XtreamRepository
 ) : EpgRepository {
 
     override suspend fun getCurrentProgram(streamId: String): Result<EpgProgram?> {
@@ -59,7 +60,15 @@ class EpgRepositoryImpl @Inject constructor(
             
             Result.success(channelEpg)
         } catch (e: Exception) {
-            Result.failure(e)
+            // Return empty EPG instead of failure to ensure UI can still display channels
+            val emptyChannelEpg = ChannelEpg(
+                streamId = streamId,
+                channelName = "",
+                currentProgram = null,
+                nextProgram = null,
+                todayPrograms = emptyList()
+            )
+            Result.success(emptyChannelEpg)
         }
     }
 
@@ -121,13 +130,14 @@ class EpgRepositoryImpl @Inject constructor(
         return getCurrentProgramFlow(streamId).map { currentProgram ->
             ChannelEpg(
                 streamId = streamId,
-                channelName = "",
+                channelName = "", // Will be populated by the calling code
                 currentProgram = currentProgram,
-                nextProgram = null // Could be optimized to include next program
+                nextProgram = null, // Could be optimized to include next program
+                todayPrograms = emptyList()
             )
         }
     }
-
+    
     override suspend fun refreshEpgData(forceRefresh: Boolean): Result<EpgData> {
         return try {
             val metadata = epgDao.getMetadata(EpgSource.SHORT_EPG.name)
@@ -135,19 +145,47 @@ class EpgRepositoryImpl @Inject constructor(
                                metadata.lastUpdated.isBefore(LocalDateTime.now().minusHours(1))
             
             if (shouldRefresh) {
-                // Fetch EPG data from API
-                refreshFromApi()
+                // Update metadata first to indicate refresh started
+                val newMetadata = EpgMetadataEntity(
+                    source = EpgSource.SHORT_EPG.name,
+                    lastUpdated = LocalDateTime.now(),
+                    totalPrograms = 0
+                )
+                epgDao.insertMetadata(newMetadata)
             }
             
             val totalPrograms = epgDao.getTotalProgramCount()
             val epgData = EpgData(
                 source = EpgSource.SHORT_EPG,
-                lastUpdated = LocalDateTime.now(),
-                channels = emptyList(), // Could be populated if needed
+                lastUpdated = metadata?.lastUpdated ?: LocalDateTime.now(),
+                channels = emptyList(),
                 totalPrograms = totalPrograms
             )
             
             Result.success(epgData)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    // New method to refresh EPG for a list of channels
+    suspend fun refreshEpgForChannels(streamIds: List<String>): Result<Unit> {
+        return try {
+            // Refresh EPG for each channel
+            streamIds.forEach { streamId ->
+                refreshChannelFromApi(streamId)
+            }
+            
+            // Update metadata with total program count
+            val totalPrograms = epgDao.getTotalProgramCount()
+            val metadata = EpgMetadataEntity(
+                source = EpgSource.SHORT_EPG.name,
+                lastUpdated = LocalDateTime.now(),
+                totalPrograms = totalPrograms
+            )
+            epgDao.insertMetadata(metadata)
+            
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -234,8 +272,7 @@ class EpgRepositoryImpl @Inject constructor(
     }
 
     private suspend fun refreshFromApi() {
-        // Implementation would fetch EPG data from Xtream Codes API
-        // For now, this is a placeholder
+        // Fetch EPG data from Xtream Codes API using XtreamRepository
         val metadata = EpgMetadataEntity(
             source = EpgSource.SHORT_EPG.name,
             lastUpdated = LocalDateTime.now(),
@@ -245,8 +282,97 @@ class EpgRepositoryImpl @Inject constructor(
     }
 
     private suspend fun refreshChannelFromApi(streamId: String) {
-        // Implementation would fetch specific channel EPG from API
-        // For now, this is a placeholder
+        // Fetch specific channel EPG from Xtream API
+        try {
+            when (val result = xtreamRepository.getShortEpg(streamId, limit = 50)) {
+                is XtreamResult.Success -> {
+                    val epgPrograms = result.data.epgListings.mapNotNull { listing ->
+                        parseEpgListing(listing, streamId)
+                    }
+                    
+                    if (epgPrograms.isNotEmpty()) {
+                        // Delete old programs for this channel
+                        epgDao.deleteProgramsForChannel(streamId)
+                        // Insert new programs
+                        epgDao.insertPrograms(epgPrograms)
+                        println("Successfully refreshed EPG for stream $streamId with ${epgPrograms.size} programs")
+                    } else {
+                        println("No EPG programs found for stream $streamId")
+                    }
+                }
+                is XtreamResult.Error -> {
+                    // Log error but don't throw exception to avoid breaking the entire refresh
+                    println("Error fetching EPG for stream $streamId: ${result.message}")
+                }
+                is XtreamResult.Loading -> {
+                    // Should not happen in this context
+                }
+            }
+        } catch (e: Exception) {
+            println("Exception while refreshing EPG for stream $streamId: ${e.message}")
+        }
+    }
+    
+    private fun parseEpgListing(listing: EpgListing, streamId: String): EpgProgramEntity? {
+        return try {
+            // Parse datetime strings - Xtream Codes typically uses Unix timestamps or formatted dates
+            val startTime = parseDateTime(listing.start)
+            val endTime = parseDateTime(listing.stop)
+            
+            if (startTime != null && endTime != null) {
+                EpgProgramEntity(
+                    id = "${streamId}_${listing.id}_${listing.start}",
+                    streamId = streamId,
+                    title = listing.title.ifEmpty { "Sin título" },
+                    description = listing.description?.takeIf { it.isNotBlank() },
+                    startTime = startTime,
+                    endTime = endTime,
+                    category = null,
+                    rating = null,
+                    language = null,
+                    isLive = false,
+                    createdAt = LocalDateTime.now(),
+                    updatedAt = LocalDateTime.now()
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            println("Error parsing EPG listing: ${e.message}")
+            null
+        }
+    }
+    
+    private fun parseDateTime(dateTimeStr: String): LocalDateTime? {
+        if (dateTimeStr.isBlank()) return null
+        
+        return try {
+            // Try parsing as Unix timestamp first
+            val timestamp = dateTimeStr.toLongOrNull()
+            if (timestamp != null && timestamp > 0) {
+                java.time.Instant.ofEpochSecond(timestamp).atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()
+            } else {
+                // Try common datetime formats
+                val formatters = listOf(
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+                    DateTimeFormatter.ofPattern("yyyyMMddHHmmss"),
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                )
+                
+                for (formatter in formatters) {
+                    try {
+                        return LocalDateTime.parse(dateTimeStr, formatter)
+                    } catch (e: DateTimeParseException) {
+                        continue
+                    }
+                }
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun EpgProgramEntity.toDomain(): EpgProgram {

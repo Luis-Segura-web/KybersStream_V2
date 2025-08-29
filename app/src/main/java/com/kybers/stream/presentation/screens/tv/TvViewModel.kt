@@ -131,6 +131,9 @@ class TvViewModel @Inject constructor(
                 filteredChannels = applyFilters(allChannels, categoryName, currentState.searchQuery)
             )
         }
+        
+        // Load EPG for the newly filtered channels
+        loadChannelsEpg()
     }
 
     fun search(query: String) {
@@ -344,6 +347,24 @@ class TvViewModel @Inject constructor(
     private fun loadChannelsEpg() {
         viewModelScope.launch {
             val channelIds = _uiState.value.filteredChannels.map { it.streamId }
+            
+            if (channelIds.isNotEmpty()) {
+                _uiState.update { it.copy(isLoadingEpg = true) }
+                
+                // Refresh EPG data for these channels (limit to first 20 to avoid overwhelming the API)
+                val channelsToRefresh = channelIds.take(20)
+                channelsToRefresh.forEach { streamId ->
+                    try {
+                        refreshEpgUseCase.refreshChannel(streamId)
+                    } catch (e: Exception) {
+                        println("Error refreshing EPG for channel $streamId: ${e.message}")
+                    }
+                }
+                
+                // Small delay to allow API calls to complete
+                kotlinx.coroutines.delay(500)
+            }
+            
             val epgMap = mutableMapOf<String, ChannelEpg>()
             
             channelIds.forEach { streamId ->
@@ -353,11 +374,26 @@ class TvViewModel @Inject constructor(
                             _uiState.value.filteredChannels.find { it.streamId == streamId }?.name ?: ""
                         )
                     },
-                    onFailure = { /* Log error but continue with other channels */ }
+                    onFailure = { 
+                        // Create empty EPG entry for channels without data
+                        epgMap[streamId] = ChannelEpg(
+                            streamId = streamId,
+                            channelName = _uiState.value.filteredChannels.find { it.streamId == streamId }?.name ?: "",
+                            currentProgram = null,
+                            nextProgram = null,
+                            todayPrograms = emptyList()
+                        )
+                    }
                 )
             }
             
-            _uiState.update { it.copy(channelsEpg = epgMap) }
+            _uiState.update { 
+                it.copy(
+                    channelsEpg = epgMap, 
+                    isLoadingEpg = false,
+                    epgError = null
+                ) 
+            }
         }
     }
     
